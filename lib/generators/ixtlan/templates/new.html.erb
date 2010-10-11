@@ -1,0 +1,7 @@
+<h1>New <%= singular_table_name %></h1>
+
+<%%= render 'form' %>
+
+<%% if allowed?(:<%= table_name %>, :index) %>
+<%%= link_to 'Back', <%= index_helper %>_path %>
+<%% end %>

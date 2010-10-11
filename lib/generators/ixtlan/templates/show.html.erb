@@ -1,0 +1,16 @@
+<p id="notice"><%%= notice %></p>
+
+<% for attribute in attributes -%>
+<p>
+  <b><%= attribute.human_name %>:</b>
+  <%%= @<%= singular_table_name %>.<%= attribute.name %> %>
+</p>
+
+<% end -%>
+
+<%% if allowed?(:<%= table_name %>, :update) %>
+<%%= link_to 'Edit', edit_<%= singular_table_name %>_path(@<%= singular_table_name %>) %> |
+<%% end %>
+<%% if allowed?(:<%= table_name %>, :index) %>
+<%%= link_to 'Back', <%= index_helper %>_path %>
+<%% end %>

@@ -1,0 +1,11 @@
+apply File.join(File.dirname(__FILE__), 'ixtlan-guard.template')
+
+def rake(*args)
+  ruby = (defined? JRUBY_VERSION) ? "jruby" : "ruby"
+  run "#{ruby} -S rake #{args.join(' ')}"
+end
+
+generate "controller", "users", "promote", "go"
+generate "scaffold", "account", "promote:string"
+
+rake "db:migrate", "test", "> out.txt"
