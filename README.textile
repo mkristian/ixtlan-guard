@@ -1,0 +1,16 @@
+h1. Guard the Rails3 Controller Actions
+
+p. info about the actual gem please look into the directory http://github.org/mkristian/ixtlan-guard/gem:gem
+
+
+h2. run all the specs, features + integrations-tests in one go
+
+p. first you need jruby for this ! then you need to install
+
+bc.         jruby -S gem 'ruby-maven'
+
+p. which allows to run the integration-tests from the demo with jetty.
+
+p. now you can execute
+
+bc.         rmvn verify
