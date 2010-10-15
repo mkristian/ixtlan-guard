@@ -27,7 +27,7 @@ Gem::Specification.new do |s|
     s.gem 'jdbc-sqlite3', '3.6.3.054'
     s.plugin('cucumber', '${jruby.plugins.version}').in_phase('integration-test').execute('test')
   end
-  s.add_development_dependency 'rspec', '2.0.0'
+  s.add_development_dependency 'rspec', '1.3.1'
   s.add_development_dependency 'cucumber', '0.9.2'
   s.add_development_dependency 'rake', '0.8.7'
 end

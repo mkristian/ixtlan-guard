@@ -7,6 +7,8 @@ describe Ixtlan::Guard do
     @guard = Ixtlan::Guard.new(Logger.new(STDOUT), 
                                :root, 
                                File.join(File.dirname(__FILE__), "guards") )
+
+    @guard.setup
     @current_user = Object.new
     def @current_user.groups(g = nil)
       @g = g if g
@@ -24,7 +26,7 @@ describe Ixtlan::Guard do
   it 'should fail with missing guard dir' do
     lambda {Ixtlan::Guard.new(Logger.new(STDOUT), 
                               :root, 
-                              "does_not_exists") }.should raise_error(Ixtlan::GuardException)
+                              "does_not_exists").setup }.should raise_error(Ixtlan::GuardException)
   end
 
   it 'should initialize' do
@@ -55,7 +57,6 @@ describe Ixtlan::Guard do
 
   it 'should pass check with user on aliased action' do
     @current_user.groups([:users])
-    @guard.add_alias(:edit, :update)
     @guard.check(@controller, :users, :edit).should be_true
   end
 
