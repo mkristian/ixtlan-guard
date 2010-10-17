@@ -65,6 +65,36 @@ describe Ixtlan::Guard do
     @guard.check(@controller, :users, :update).should be_true
   end
 
+  it 'should not pass check with user when in blocked group' do
+    @current_user.groups([:users])
+    @guard.block_groups([:users])
+    begin
+      @guard.check(@controller, :users, :update).should be_false
+    ensure
+      @guard.block_groups([])
+    end
+  end
+
+  it 'should pass check with user when not in blocked group' do
+    @current_user.groups([:users])
+    @guard.block_groups([:accounts])
+    begin
+      @guard.check(@controller, :users, :update).should be_true
+    ensure
+      @guard.block_groups([])
+    end
+  end
+
+  it 'should pass check with root-user when not in blocked group' do
+    @current_user.groups([:root])
+    @guard.block_groups([:root])
+    begin
+      @guard.check(@controller, :users, :update).should be_true
+    ensure
+      @guard.block_groups([])
+    end
+  end
+
   it 'should not pass check with user' do
     @current_user.groups([:accounts])
     @guard.check(@controller, :users, :update).should be_false

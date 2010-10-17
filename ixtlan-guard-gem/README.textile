@@ -41,16 +41,15 @@ p. assume you can translate your web application and have a translator group but
 
 p. let's add the following to your TranslationsController
 
-bc. before :locale_authorization
+bc. before-filter :locale_authorization
     skip-before-filter :authorization
     def locale_authorization
-      current_locale = params[:locale]
+      @locale = Locale.find_by_code(params[:locale])
       authorization do |group| 
         if controller.respond_to? :current_user
           user = self.send :current_user
-          GroupsLocalesUsers.first(:user => user, :group.name => group, :locale.name => current_locale)
-          end
-	end
+	  !GroupsLocalesUsers.first(:conditions => ["user_id = ? AND group_name = ? AND locale_name = ?", user.id, group.to_s, @locale).nil?
+      	end
       end
     end
 
@@ -67,3 +66,11 @@ p. the view *allowed?* needs the resource name and the action to answer the ques
 h2. rails3 generators
 
 p. per default the *scaffold*, *resource* and *controller* will add a guard for the actions of the generated controller. the views of the scaffold will use *allowed?* to determine if a link or button leads to an action which is allowed for the *current_user*
+
+h2. maintanance mode
+
+p. since the guard is the ideal place to temporary disallow or block some groups, the guard offers some helper methods for this:
+* block_groups(array_of_groups)
+* blocked_groups
+* current_user_restricted?(controller)
+with this you can easily block all groups but the *root* which remains as it is.

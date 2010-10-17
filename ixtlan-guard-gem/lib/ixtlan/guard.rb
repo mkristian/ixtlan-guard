@@ -93,7 +93,26 @@ module Ixtlan
 
     public
 
-    def check(controller, resource, action, &block)
+    def block_groups(groups)
+      @blocked_groups = (groups || []).collect { |g| g.to_sym}
+      @blocked_groups.delete(@superuser)
+      @blocked_groups
+    end
+
+    def blocked_groups
+      @blocked_groups ||= []
+    end
+
+    def current_user_restricted?(controller)
+      groups =  @block.call(controller)
+      if groups
+        groups.select { |g| !blocked_groups.member?(g.to_sym) }.size < groups.size
+      else
+        nil
+      end
+    end
+
+     def check(controller, resource, action, &block)
       groups =  @block.call(controller)
       if groups.nil?
         @logger.debug("check #{resource}##{action}: not authenticated")
@@ -114,8 +133,11 @@ module Ixtlan
             @logger.debug("check #{resource}##{action}: allowed for all")
             return true
           else
+            puts "----"
+            p allowed
+            p blocked_groups
             groups.each do |group|
-              if allow_all_groups || allowed.member?(group.to_sym)
+              if (allow_all_groups || allowed.member?(group.to_sym)) && !blocked_groups.member?(group.to_sym)
                 if(block.nil? || block.call(group))
                   @logger.debug("check #{resource}##{action}: true")
                   return true
