@@ -1,6 +1,6 @@
 h1. Guard the Rails Controller Actions
 
-h2. installation
+h2. installation for rails3
 
 p. just add
 

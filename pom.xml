@@ -9,7 +9,7 @@
   <version>0</version>
   <packaging>pom</packaging>
   <modules>
-    <module>gem</module>
+    <module>ixtlan-guard-gem</module>
     <module>demo</module>
   </modules>
 </project>
