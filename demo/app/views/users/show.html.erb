@@ -6,5 +6,9 @@
 </p>
 
 
+<% if allowed?(:users, :update) %>
 <%= link_to 'Edit', edit_user_path(@user) %> |
+<% end %>
+<% if allowed?(:users, :index) %>
 <%= link_to 'Back', users_path %>
+<% end %>

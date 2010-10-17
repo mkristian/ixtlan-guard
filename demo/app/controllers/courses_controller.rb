@@ -1,8 +1,33 @@
 class CoursesController < ApplicationController
+
+  protected
+
+  before_filter :locale_authorization
+
+  skip_before_filter :authorization
+
+  def locale_authorization
+    @domain = Domain.find_by_name(params[:domain])
+    authorization do |group| 
+      if self.respond_to?(:current_user) && @domain
+        user = self.send :current_user
+        map = {
+          "admin:courses" => ["asia", "europe"],
+          "registrar:courses" => ["asia"],
+          "teacher:teacher" => ["europe"]
+        }
+        allowed_domains = map[ user.name + ":" + group.to_s] || []
+        allowed_domains.member?(@domain.name) || group == :root
+      end
+    end
+  end
+
+  public
+
   # GET /courses
   # GET /courses.xml
   def index
-    @courses = Course.all
+    @courses = Course.all(:conditions => ["domain_id = ?", @domain.id])
 
     respond_to do |format|
       format.html # index.html.erb
@@ -41,10 +66,11 @@ class CoursesController < ApplicationController
   # POST /courses.xml
   def create
     @course = Course.new(params[:course])
+    @course.domain = @domain
 
     respond_to do |format|
       if @course.save
-        format.html { redirect_to(@course, :notice => 'Course was successfully created.') }
+        format.html { redirect_to(course_url(@domain.name, @course), :notice => 'Course was successfully created.') }
         format.xml  { render :xml => @course, :status => :created, :location => @course }
       else
         format.html { render :action => "new" }
@@ -57,10 +83,12 @@ class CoursesController < ApplicationController
   # PUT /courses/1.xml
   def update
     @course = Course.find(params[:id])
+    @course.domain = @domain
 
     respond_to do |format|
       if @course.update_attributes(params[:course])
-        format.html { redirect_to(@course, :notice => 'Course was successfully updated.') }
+p course_url(@domain.name, @course)
+        format.html { redirect_to(course_url(@domain.name, @course), :notice => 'Course was successfully updated.') }
         format.xml  { head :ok }
       else
         format.html { render :action => "edit" }
@@ -76,7 +104,7 @@ class CoursesController < ApplicationController
     @course.destroy
 
     respond_to do |format|
-      format.html { redirect_to(courses_url) }
+      format.html { redirect_to(courses_url(@domain.name)) }
       format.xml  { head :ok }
     end
   end

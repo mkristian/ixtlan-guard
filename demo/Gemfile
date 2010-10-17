@@ -30,6 +30,9 @@ gem "jdbc-sqlite3", :require => false if defined?(JRUBY_VERSION)
 # group :development, :test do
 #   gem 'webrat'
 # end
+
+gem 'ixtlan-guard'
+
 if defined? MAVEN
   plugin('org.mortbay.jetty.jetty-maven-plugin', '${jetty.version}') do |jetty|
     jetty.with(:stopKey => 'foo', :stopPort => 9999)

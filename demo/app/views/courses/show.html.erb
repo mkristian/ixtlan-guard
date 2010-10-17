@@ -1,10 +1,19 @@
 <p id="notice"><%= notice %></p>
 
 <p>
-  <b>Name:</b>
-  <%= @course.name %>
+  <b>Kind:</b>
+  <%= @course.kind %>
+</p>
+
+<p>
+  <b>Domain:</b>
+  <%= @course.domain.name %>
 </p>
 
 
-<%= link_to 'Edit', edit_course_path(@course) %> |
-<%= link_to 'Back', courses_path %>
+<% if allowed?(:courses, :update) %>
+<%= link_to 'Edit', edit_course_path(@domain.name, @course) %> |
+<% end %>
+<% if allowed?(:courses, :index) %>
+<%= link_to 'Back', courses_path(@domain.name) %>
+<% end %>

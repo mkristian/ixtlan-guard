@@ -10,11 +10,61 @@ class UsersController < ApplicationController
     end
   end
 
+  
+  # GET /users/1/login
+  def login
+    @user = User.find(params[:id])
+    session[:user] = @user
+    
+    respond_to do |format|
+      format.html { 
+        if allowed?(:index)
+          redirect_to(users_url) 
+        elsif @user.name == "teacher"
+          redirect_to(courses_url("europe")) 
+        else
+          redirect_to(courses_url("asia")) 
+        end
+      }
+      format.xml  { head :ok }
+    end
+  end
+
+  # GET /users/1/logout
+  def logout
+    session[:user] = nil
+    
+    respond_to do |format|
+      format.html { redirect_to(users_url) }
+      format.xml  { head :ok }
+    end
+  end
+
+  # GET /users/maintanence
+  def maintanance
+    guard.block_groups([:teacher, :courses])
+    
+    respond_to do |format|
+      format.html { redirect_to(users_url) }
+      format.xml  { head :ok }
+    end
+  end
+
+  # GET /users/resume
+  def resume
+    guard.block_groups([])
+    
+    respond_to do |format|
+      format.html { redirect_to(users_url) }
+      format.xml  { head :ok }
+    end
+  end
+
   # GET /users/1
   # GET /users/1.xml
   def show
     @user = User.find(params[:id])
-    session[:user] = @user
+
     respond_to do |format|
       format.html # show.html.erb
       format.xml  { render :xml => @user }

@@ -2,4 +2,6 @@
 
 <%= render 'form' %>
 
+<% if allowed?(:users, :index) %>
 <%= link_to 'Back', users_path %>
+<% end %>

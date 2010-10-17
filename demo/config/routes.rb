@@ -1,9 +1,18 @@
 Demo::Application.routes.draw do
   resources :domains
 
-  resources :courses
+  resources :courses, :path => ":domain/courses"
 
-  resources :users
+  resources :users do
+    member do
+      get :login
+      get :logout
+    end
+    collection do
+      get :maintanance
+      get :resume
+    end
+  end
 
   # The priority is based upon order of creation:
   # first created -> highest priority.

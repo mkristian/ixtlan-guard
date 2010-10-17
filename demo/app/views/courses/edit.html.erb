@@ -2,5 +2,9 @@
 
 <%= render 'form' %>
 
-<%= link_to 'Show', @course %> |
-<%= link_to 'Back', courses_path %>
+<% if allowed?(:courses, :show) %>
+<%= link_to 'Show', course_path(@domain.name, @course) %> |
+<% end %>
+<% if allowed?(:courses, :index) %>
+<%= link_to 'Back', courses_path(@domain.name) %>
+<% end %>

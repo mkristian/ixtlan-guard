@@ -7,7 +7,18 @@
   <%= csrf_meta_tag %>
 </head>
 <body>
-
+<% if (user = controller.send(:current_user)) %>
+<%= link_to 'logout', logout_user_path(user) %>
+<b>user: <%= user.name %></b>
+<% end %>
+<% if controller.send(:guard).blocked_groups.size > 0 %>
+<p><b>maintandance mode - may slowdown response time</b></p>
+<% end %>
+<% if controller.send(:guard).current_user_restricted?(controller) %>
+<b>restricted functionality available</b>
+<% end %>
+<p>
+</p>
 <%= yield %>
 
 </body>

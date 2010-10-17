@@ -2,7 +2,8 @@
 
 <table>
   <tr>
-    <th>Name</th>
+    <th>Kind</th>
+    <th>Domain</th>
     <th></th>
     <th></th>
     <th></th>
@@ -10,14 +11,23 @@
 
 <% @courses.each do |course| %>
   <tr>
-    <td><%= course.name %></td>
-    <td><%= link_to 'Show', course %></td>
-    <td><%= link_to 'Edit', edit_course_path(course) %></td>
-    <td><%= link_to 'Destroy', course, :confirm => 'Are you sure?', :method => :delete %></td>
+    <td><%= course.kind %></td>
+    <td><%= course.domain.name %></td>
+<% if allowed?(:courses, :show) %>
+    <td><%= link_to 'Show', course_path(@domain.name, course) %></td>
+<% end %>
+<% if allowed?(:courses, :update) %>
+    <td><%= link_to 'Edit', edit_course_path(@domain.name,course) %></td>
+<% end %>
+<% if allowed?(:courses, :destroy) %>
+    <td><%= link_to 'Destroy', course_path(@domain.name, course), :confirm => 'Are you sure?', :method => :delete %></td>
+<% end %>
   </tr>
 <% end %>
 </table>
 
 <br />
 
-<%= link_to 'New Course', new_course_path %>
+<% if allowed?(:courses, :create) %>
+<%= link_to 'New Course', new_course_path(@domain.name) %>
+<% end %>
