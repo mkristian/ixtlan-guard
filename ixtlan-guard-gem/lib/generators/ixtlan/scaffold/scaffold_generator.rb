@@ -8,7 +8,6 @@ module Ixtlan
 #    check_class_collision :suffix => "Guard"
     
     def create_guard_files
-      puts "ASD"
       template 'guard.rb', File.join('app', 'guards', class_path, "#{plural_file_name}_guard.rb")
     end
     

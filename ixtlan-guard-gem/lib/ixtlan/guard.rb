@@ -133,9 +133,6 @@ module Ixtlan
             @logger.debug("check #{resource}##{action}: allowed for all")
             return true
           else
-            puts "----"
-            p allowed
-            p blocked_groups
             groups.each do |group|
               if (allow_all_groups || allowed.member?(group.to_sym)) && !blocked_groups.member?(group.to_sym)
                 if(block.nil? || block.call(group))
