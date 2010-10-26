@@ -2,13 +2,15 @@ h1. Start the demo application
 
 h2. with maven3 (jetty)
 
-bc. mvn jetty:run -f Gemfile.pom
+bc. mvn rails3:rake -Dargs="db:setup"
+mvn jetty:run -f Gemfile.pom
 
 p. note: there is no need to have jruby, rubygems, rails installed !!!
 
 h2. with ruby-maven gem (jetty)
 
 bc. jruby -S gem install ruby-maven --pre
+rmvn rake db:setup
 rmvn jetty-run
 
 p. note: you need to have jruby installed but no rails or bundler !!!
@@ -16,6 +18,7 @@ p. note: you need to have jruby installed but no rails or bundler !!!
 h2. with jruby (webrick)
 
 bc. jruby -S bundle install
+jruby -S rake db:setup
 jruby script/rails server
 
 p. note: you to have jruby and bundler installed !!!
@@ -23,6 +26,7 @@ p. note: you to have jruby and bundler installed !!!
 h2. with ruby (webrick)
 
 bc. bundle install
+rake db:setup
 script/rails server
 
 p. note: you to have bundler installed !!!
