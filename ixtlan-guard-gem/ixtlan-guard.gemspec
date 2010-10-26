@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'ixtlan-guard'
-  s.version = '0.1.0'
+  s.version = '0.1.1'
 
   s.summary = 'guard your controller actions'
   s.description = 'simple authorization framework for rails controllers'
@@ -17,7 +17,8 @@ Gem::Specification.new do |s|
   s.rdoc_options = ['--main','README.textile']
   s.files += Dir['lib/**/*']
   s.files += Dir['spec/**/*']
-  s.files += Dir['features/**/*']
+  s.files += Dir['features/**/*rb']
+  s.files += Dir['features/**/*feature']
   s.test_files += Dir['spec/**/*_spec.rb']
   s.test_files += Dir['features/*.feature']
   s.test_files += Dir['features/step_definitions/*.rb']
