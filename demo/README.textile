@@ -35,11 +35,11 @@ h1. Navigate through the application
 
 p. I use the jetty port 8080 for the sample urls. startuing point is
 
-bc. "http://localhost:8080/users":http://localhost:8080/users
+p. "http://localhost:8080/users":http://localhost:8080/users
 
 p. where you can login into the different users. the url for the different resources are:
 
-bc. "http://localhost:8080/users":http://localhost:8080/users
+p. "http://localhost:8080/users":http://localhost:8080/users
 "http://localhost:8080/domains":http://localhost:8080/domains
 "http://localhost:8080/asia/courses":http://localhost:8080/asia/courses
 "http://localhost:8080/europe/courses":http://localhost:8080/europe/courses
