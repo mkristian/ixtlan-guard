@@ -74,3 +74,15 @@ p. since the guard is the ideal place to temporary disallow or block some groups
 * blocked_groups
 * current_user_restricted?(controller)
 with this you can easily block all groups but the *root* which remains as it is.
+
+h2. play together with authentication frameworks
+
+p. the guard plays nicely together with authentication frameworks like *restful-authentication*, *devise* or any homegrown authentication which provides a *current_user* method for all controllers. see demo of that gem.
+
+p. even if you can not provide *current_user* method you can use the guard with a custom block. pass in an block on initialization which returns the current user from somewhere. for example add something like this in an confug/initializer:
+
+bc. Rails.configuration.guard.block = Proc.new { Session.user }
+
+h2. other authorization libraries
+
+p. *cancan* . . . 
