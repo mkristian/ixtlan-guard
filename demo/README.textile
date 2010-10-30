@@ -33,7 +33,7 @@ p. note: you to have bundler installed !!!
 
 h1. Navigate through the application
 
-p. I use the jetty port 8080 for the sample urls. startuing point is
+p. I use the jetty port 8080 for the sample urls. starting point is
 
 p. "http://localhost:8080/users":http://localhost:8080/users
 
