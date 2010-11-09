@@ -1,3 +1,4 @@
+#-*- mode: ruby -*-
 apply File.join(File.dirname(__FILE__), 'ixtlan-guard.template')
 
 def rake(*args)
@@ -5,6 +6,7 @@ def rake(*args)
   run "#{ruby} -S rake #{args.join(' ')}"
 end
 
+#java.lang.System.getProperties.each { |k,v| puts "#{k} => #{v}" }
 generate "controller", "users", "promote", "go"
 generate "scaffold", "account", "promote:string"
 

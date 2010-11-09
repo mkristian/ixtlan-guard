@@ -5,9 +5,16 @@ class <%= guard_class_name %>Guard
     guard.aliases = <%= aliases.inspect %>
 <% end -%>
     guard.action_map= {
-<% for action in actions -%>
-      :<%= action %> => [],
-<% end -%>
+<% case actions
+   when Array
+     for action in actions -%>
+       :<%= action %> => [],
+<%   end 
+   when Hash
+     actions.each do |action, groups| -%>
+      :<%= action %> => <%= groups.inspect %>,
+<%   end
+   end -%>
     }
   end
 end

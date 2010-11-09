@@ -1,0 +1,41 @@
+#-*- mode: ruby -*-
+apply File.join(File.dirname(__FILE__), 'ixtlan-guard.template')
+
+def exec(command)
+  ruby = (defined? JRUBY_VERSION) ? "jruby" : "ruby"
+  run "#{ruby} #{command}"
+end
+
+def rake(*args)
+  exec "-S rake #{args.join(' ')}"
+end
+
+def bundle_install
+  puts "maven" * 80 if defined? MAVEN
+  puts "-"*80
+  puts ENV['GEM_HOME']
+  puts ENV['GEM_PATH']
+  run "mvn gem:initialize -Dgem.home=#{ENV['GEM_HOME']} -Dgem.path=#{ENV['GEM_PATH']}"
+end
+
+gem 'rspec'
+gem 'rspec-rails'
+
+bundle_install
+
+generate 'rspec:install'
+
+generate 'ixtlan:user_management_models user group name:string domain name:string locale code:string'
+
+rake "db:migrate"
+
+file 'spec/user_management_models_spec.rb', <<-FILE
+require 'spec_helper.rb'
+require 'ixtlan/spec/user_management_models_spec'
+
+describe "application" do
+  it_behaves_like "integration-test"
+end
+FILE
+
+exec "-S rspec spec/user_management_models_spec.rb > out.txt"

@@ -9,14 +9,12 @@ class GuardRailtie < Rails::Railtie
       attr_accessor :guard
     end
     app.config.guard = 
-      Ixtlan::Guard.new(Logger.new(STDERR), 
-                        :root, 
-                        File.join(Rails.root, "app", "guards")) 
+      Ixtlan::Guard.new(:gurad_dir => File.join(Rails.root, "app", "guards")) 
   end
 
   config.after_initialize do |app|
     logger = app.config.logger || Rails.logger || Logger.new(STDERR)
-    app.config.guard.logger = logger
+    app.config.guard.logger = logger unless defined?(Slf4r)
     begin
       app.config.guard.setup
     rescue Ixtlan::GuardException => e

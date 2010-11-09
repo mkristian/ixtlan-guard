@@ -1,3 +1,4 @@
+#-*- mode: ruby -*-
 if defined? JRUBY_VERSION
   apply File.join(File.dirname(__FILE__), 'jruby.template')
 end

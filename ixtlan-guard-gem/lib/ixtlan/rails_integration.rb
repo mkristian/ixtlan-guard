@@ -13,19 +13,52 @@ module Ixtlan
           Rails.configuration.guard
         end
 
-        def authorization(&block)
-          resource_authorization(params[:controller], params[:action], &block)
+        def authorization(flavor = nil, &block)
+          if flavor.nil?
+            flavor = guard.flavor(self)
+            if flavor 
+              method = "#{flavor}_authorization".to_sym
+              if self.respond_to?(method)
+                return send "#{flavor}_authorization".to_sym, &block
+              else
+                logger.warn "flavor #{flavor} confiugred in guard, but there is not method '#{method}'"
+                flavor = nil
+              end
+            end
+          end
+          resource_authorization(params[:controller], params[:action], flavor, &block)
         end
 
-        def resource_authorization(resource, action, &block)
-          unless guard.check(self, resource, action, &block)
+        def resource_authorization(resource, action, flavor = nil, &block)
+          unless guard.check(self, 
+                             resource, 
+                             action, 
+                             &flavored_block(flavor, &block))
             raise ::Ixtlan::PermissionDenied.new("permission denied for '#{resource}##{action}'")
           end
           true
         end
 
-        def allowed?(action, &block)
-          guard.check(self, params[:controller], action, &block)
+        def flavored_block(flavor = nil, &block)
+          if block
+            if flavor
+              Proc.new do |group|
+                allowed_flavors = guard.flavors[flavor.to_sym].call(self, group)
+                block.call(allowed_flavors)
+              end
+            else
+              block
+            end
+          end
+        end
+
+        private :flavored_block
+
+        def allowed?(action, flavor = nil, &block)
+          guard.check(self, 
+                      params[:controller], 
+                      action, 
+                      &flavored_block(flavor, &block))
         end
       end
     end
@@ -38,8 +71,8 @@ module Ixtlan
     end
 
     module InstanceMethods #:nodoc:
-      def allowed?(resource, action, &block)
-        controller.send(:guard).check(controller, resource, action, &block)
+      def allowed?(resource, action, flavor_selector = nil, &block)
+        controller.send(:guard).check(controller, resource, action, flavor_selector, &block)
       end
     end
   end
