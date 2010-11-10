@@ -1,13 +1,17 @@
 #-*- mode: ruby -*-
 apply File.join(File.dirname(__FILE__), 'ixtlan-guard.template')
 
-def rake(*args)
-  ruby = (defined? JRUBY_VERSION) ? "jruby" : "ruby"
-  run "#{ruby} -S rake #{args.join(' ')}"
-end
+require File.join(File.dirname(__FILE__), 'helper.rb')
+
+#alias :rake :run_rake
+
+bundle_install
 
 #java.lang.System.getProperties.each { |k,v| puts "#{k} => #{v}" }
 generate "controller", "users", "promote", "go"
 generate "scaffold", "account", "promote:string"
 
-rake "db:migrate", "test", "> out.txt"
+run_rake "db:migrate"
+run_rake "test", "out.txt"
+
+# vim: syntax=Ruby

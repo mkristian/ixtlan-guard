@@ -38,10 +38,14 @@ Spec::Rake::SpecTask.new(:spec) do |t|
   t.spec_files = Dir.glob(File.join('spec','**','*_spec.rb'))
 end
 
-desc 'generate rails using all generators and run the specs/tests'
-require 'cucumber/rake/task'
+# using both ruby and jruby with bundler is almost impossible - too many
+# strange issues
 
-Cucumber::Rake::Task.new do |t|
-  t.cucumber_opts = %w{--format pretty}
-end
+# desc 'generate rails using all generators and run the specs/tests'
+# require 'cucumber/rake/task'
+
+# Cucumber::Rake::Task.new do |t|
+#   t.cucumber_opts = %w{--format pretty}
+# end
+
 # vim: syntax=Ruby

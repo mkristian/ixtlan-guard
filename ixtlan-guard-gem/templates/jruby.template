@@ -24,3 +24,5 @@ DB
 if options[:database] =~ /mysql/
   gsub_file "config/database.yml", /mysql2/, 'mysql'
 end
+
+# vim: syntax=Ruby

@@ -4,15 +4,23 @@ require 'ixtlan/guard'
 describe Ixtlan::Guard do
 
   before :all do
-    @guard = Ixtlan::Guard.new(Logger.new(STDOUT), 
-                               :root, 
-                               File.join(File.dirname(__FILE__), "guards") )
+    @guard = Ixtlan::Guard.new(:guard_dir => File.join(File.dirname(__FILE__), "guards") )
 
     @guard.setup
     @current_user = Object.new
     def @current_user.groups(g = nil)
-      @g = g if g
-      @g || []
+      if g
+        @groups = g.collect do |gg|
+          group = Object.new
+          def group.name(name =nil)
+            @name = name if name
+            @name
+          end
+          group.name(gg)
+          group
+        end
+      end
+      @groups || []
     end
 
     @controller = Object.new
@@ -24,9 +32,7 @@ describe Ixtlan::Guard do
   end
 
   it 'should fail with missing guard dir' do
-    lambda {Ixtlan::Guard.new(Logger.new(STDOUT), 
-                              :root, 
-                              "does_not_exists").setup }.should raise_error(Ixtlan::GuardException)
+    lambda {Ixtlan::Guard.new(:guard_dir => "does_not_exists").setup }.should raise_error(Ixtlan::GuardException)
   end
 
   it 'should initialize' do

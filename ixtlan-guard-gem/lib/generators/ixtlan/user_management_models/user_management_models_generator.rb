@@ -10,19 +10,6 @@ module Ixtlan
     attr_reader :params
 
     hook_for :orm, :required => true
-    
-    # hook_for :group_model, :default => true, :boolen => true do |instance, model|
-    #   instance.invoke model, instance.params
-    # end
-    # hook_for :user_model, :default => true, :boolen => true do |instance, model|
-    #   instance.invoke model, instance.params
-    # end
-    # hook_for :flavor1_model, :default => true, :boolen => true do |instance, model|
-    #   instance.invoke model, instance.params
-    # end
-    # hook_for :flavor2_model, :default => true, :boolen => true do |instance, model|
-    #   instance.invoke model, instance.params
-    # end
   end
 end
 

@@ -1,6 +1,7 @@
+# -*- mode: ruby -*-
 Gem::Specification.new do |s|
   s.name = 'ixtlan-guard'
-  s.version = '0.1.1'
+  s.version = '0.2.0'
 
   s.summary = 'guard your controller actions'
   s.description = 'simple authorization framework for rails controllers'
@@ -22,13 +23,10 @@ Gem::Specification.new do |s|
   s.test_files += Dir['spec/**/*_spec.rb']
   s.test_files += Dir['features/*.feature']
   s.test_files += Dir['features/step_definitions/*.rb']
-  s.add_development_dependency 'rails', '3.0.0'
-  if defined? MAVEN
-    s.gem 'activerecord-jdbc-adapter', '0.9.4'
-    s.gem 'jdbc-sqlite3', '3.6.3.054'
-    s.plugin('cucumber', '${jruby.plugins.version}').in_phase('integration-test').execute('test')
-  end
-  s.add_development_dependency 'rspec', '1.3.1'
-  s.add_development_dependency 'cucumber', '0.9.2'
+  s.add_development_dependency 'rails', '3.0.1'
+  s.add_development_dependency 'rspec', '2.0.1'
+  s.add_development_dependency 'cucumber', '0.9.4'
   s.add_development_dependency 'rake', '0.8.7'
 end
+
+# vim: syntax=Ruby

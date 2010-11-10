@@ -1,33 +1,36 @@
 #-*- mode: ruby -*-
 apply File.join(File.dirname(__FILE__), 'ixtlan-guard.template')
 
-def exec(command)
-  ruby = (defined? JRUBY_VERSION) ? "jruby" : "ruby"
-  run "#{ruby} #{command}"
-end
+require File.join(File.dirname(__FILE__), 'helper.rb')
 
-def rake(*args)
-  exec "-S rake #{args.join(' ')}"
-end
+#alias :rake :run_rake
 
-def bundle_install
-  puts "maven" * 80 if defined? MAVEN
-  puts "-"*80
-  puts ENV['GEM_HOME']
-  puts ENV['GEM_PATH']
-  run "mvn gem:initialize -Dgem.home=#{ENV['GEM_HOME']} -Dgem.path=#{ENV['GEM_PATH']}"
-end
+# def exec(command)
+#   ruby = (defined? JRUBY_VERSION) ? "jruby" : "ruby"
+#   run "#{ruby} #{command}"
+# end
+
+# def rake(arg, options = {})
+#   env  = options[:env] || 'development'
+#   rake_command = "#{ENV['GEM_HOME']}/bin/rake"
+#   rake_command = "-S rake" unless File.exists?(rake_command)
+#   exec "#{rake_command} #{arg} RAILS_ENV=#{env}"
+# end
+
+# def bundle_install
+#   run "unset GEM_HOME; unset GEM_PATH;rmvn gem:initialize -Dgem.home=#{ENV['GEM_HOME']} -Dgem.path=#{ENV['GEM_PATH']}"
+# end
 
 gem 'rspec'
 gem 'rspec-rails'
 
 bundle_install
+run_generate ''
+run_generate 'rspec:install'
 
-generate 'rspec:install'
+generate 'ixtlan:user_management_models', 'user group', 'name:string', 'domain name:string', 'locale code:string'
 
-generate 'ixtlan:user_management_models user group name:string domain name:string locale code:string'
-
-rake "db:migrate"
+run_rake "db:migrate", :env => :test
 
 file 'spec/user_management_models_spec.rb', <<-FILE
 require 'spec_helper.rb'
@@ -39,3 +42,5 @@ end
 FILE
 
 exec "-S rspec spec/user_management_models_spec.rb > out.txt"
+
+# vim: syntax=Ruby

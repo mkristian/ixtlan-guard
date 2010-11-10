@@ -3,7 +3,8 @@ module ActiveRecord
   #module Ixtlan
   class UserManagementModelsGenerator < ::ActiveRecord::Generators::ModelGenerator
 
-    source_paths << '/home/kristian/projects/ixtlan-guard/ixtlan-guard-gem/target/simple/target/rubygems/gems/activerecord-3.0.0/lib/rails/generators/active_record/model/templates'
+    source_paths << ActiveRecord::Generators::ModelGenerator.source_root
+
     source_root File.expand_path('../templates', __FILE__)
     
     arguments.clear # clear name argument from NamedBase
