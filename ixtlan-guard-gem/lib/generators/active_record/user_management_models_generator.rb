@@ -1,6 +1,5 @@
 require 'rails/generators/active_record/model/model_generator'
 module ActiveRecord
-  #module Ixtlan
   class UserManagementModelsGenerator < ::ActiveRecord::Generators::ModelGenerator
 
     source_paths << ActiveRecord::Generators::ModelGenerator.source_root
@@ -140,10 +139,12 @@ module ActiveRecord
       setup(group_params)
       template 'group_model.rb', File.join('app/models', class_path, "#{file_name}.rb")
       
-      params_array[2,10000].each do |params|
-        setup(params)
-        template 'model.rb', File.join('app/models', class_path, "#{file_name}.rb")
-        template 'flavor_model.rb', File.join('app/models', class_path, "#{association_name.singularize}.rb")
+      if params_array.size > 2
+        params_array[2,10000].each do |params|
+          setup(params)
+          template 'model.rb', File.join('app/models', class_path, "#{file_name}.rb")
+          template 'flavor_model.rb', File.join('app/models', class_path, "#{association_name.singularize}.rb")
+        end
       end
     end
     
@@ -186,7 +187,7 @@ module ActiveRecord
                    result = [user_params, group_params]
                    index = 0
                    while( flavor = flavor_params(index) ) do
-                     result << flavor
+                     result << flavor if flavor.size > 0
                      index += 1
                    end
                    result
@@ -198,5 +199,4 @@ module ActiveRecord
     end
     
   end
-#  end
 end

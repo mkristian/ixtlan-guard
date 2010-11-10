@@ -3,7 +3,8 @@ require 'generators/ixtlan/scaffold/scaffold_generator.rb'
 module Ixtlan
   class PermissionsScaffoldGenerator < ScaffoldGenerator
 
-   source_root File.expand_path('../../templates', __FILE__)
+    source_root File.expand_path('../../templates', __FILE__)
+
     arguments.clear # clear name argument from NamedBase
       
     def name # set alias so NamedBase uses the model as its name
