@@ -14,6 +14,6 @@
 <% if allowed?(:courses, :update) %>
 <%= link_to 'Edit', edit_course_path(@domain.name, @course) %> |
 <% end %>
-<% if allowed?(:courses, :index) %>
+<% if allowed?(:courses, :index, @domain.name) %>
 <%= link_to 'Back', courses_path(@domain.name) %>
 <% end %>

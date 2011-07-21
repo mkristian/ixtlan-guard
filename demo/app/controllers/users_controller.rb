@@ -1,4 +1,20 @@
 class UsersController < ApplicationController
+
+#  ::Ixtlan::Models::GuardUser = User
+#  ::Ixtlan::Models::GuardGroup = Group
+#  ::Ixtlan::Models::GuardFlavorAssociations = [DomainsGroupsUser]
+
+  cache_headers :protected, false
+  before_filter :cache_headers
+
+  private
+
+  def intersection(set1, set2)
+    set1 - (set1 - set2)
+  end
+
+  public
+
   # GET /users
   # GET /users.xml
   def index
@@ -10,27 +26,29 @@ class UsersController < ApplicationController
     end
   end
 
-  
-  # GET /users/1/login
+  def permissions
+    render :xml => guard.permissions(self).to_xml
+  end
+
+  # GET /sessions/users/1/login
   def login
     @user = User.find(params[:id])
     session[:user] = @user
-    
+
     respond_to do |format|
       format.html { 
         if allowed?(:index)
           redirect_to(users_url) 
-        elsif @user.name == "teacher"
-          redirect_to(courses_url("europe")) 
         else
-          redirect_to(courses_url("asia")) 
+          #TODO translators
+          redirect_to(courses_url(DomainsGroupsUser.all(:conditions => ["user_id=? and group_id=?", @user.id, @user.groups.first.id]).first.domain.name))
         end
       }
       format.xml  { head :ok }
     end
   end
 
-  # GET /users/1/logout
+  # GET /sessions/logout
   def logout
     session[:user] = nil
     
@@ -40,7 +58,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # GET /users/maintanence
+  # GET /sessions/maintanence
   def maintanance
     guard.block_groups([:teacher, :courses])
     
@@ -50,7 +68,7 @@ class UsersController < ApplicationController
     end
   end
 
-  # GET /users/resume
+  # GET /sessions/resume
   def resume
     guard.block_groups([])
     
@@ -108,8 +126,29 @@ class UsersController < ApplicationController
   def update
     @user = User.find(params[:id])
 
-    respond_to do |format|
-      if @user.update_attributes(params[:user])
+    errors = []
+    allowed_domain_ids = current_user.domains_for_group(Group.user)
+    (params[:user][:group_ids] || []).each do |gid|
+      g = Group.find(gid)
+      domain_ids = @user.domains_for_group(gid.to_i).collect { |d| d.id }
+      # calculate intersection of domains and allowed_domains
+      existing_ids = intersection(domain_ids, allowed_domain_ids)
+
+      target_ids = ((params[g.name] || {})[:domain_ids] || []).collect { |i| i.to_i }
+      
+      # delete 
+      (existing_ids - target_ids).each do |id|
+        DomainsGroupsUser.delete_all(:user_id => @user.id, :group_id => gid, :domain_id => id)
+      end
+      # add
+      ids = target_ids - existing_ids
+      intersection(ids, allowed_domain_ids).each do |id|
+        DomainsGroupsUser.create(:user_id => @user.id, :group_id => gid, :domain_id => id)
+      end
+    end
+
+     respond_to do |format|
+      if @user.update_attributes(params[:user]) && errors.size == 0
         format.html { redirect_to(@user, :notice => 'User was successfully updated.') }
         format.xml  { head :ok }
       else

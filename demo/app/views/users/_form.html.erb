@@ -15,6 +15,24 @@
     <%= f.label :name %><br />
     <%= f.text_field :name %>
   </div>
+
+<% current_user = controller.send(:current_user)
+   (@user.root? ? [Group.root] : current_user.all_groups).each do |g| %>
+<hr />
+  <div class="field">
+    <%= f.label "groups_", "group #{g.name}" %>
+    <%= check_box_tag "user[group_ids][]", g.id, @user.groups.member?(g) %>
+    
+    <% (@user.root? ? [] : current_user.managed_domains_for_group(g.id)).each do |domain| %>
+      <div class="field">
+	<%= f.label "_", "domain #{domain.name}" %>
+	<%= check_box_tag "#{g.name}[domain_ids][]", domain.id, @user.domain_group?(domain, g) %>
+      </div>
+    <% end %>
+
+  </div>
+<% end  %>
+
   <div class="actions">
     <%= f.submit %>
   </div>

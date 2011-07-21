@@ -13,13 +13,13 @@
   <tr>
     <td><%= course.kind %></td>
     <td><%= course.domain.name %></td>
-<% if allowed?(:courses, :show) %>
+<% if allowed?(:courses, :show, @domain.name) %>
     <td><%= link_to 'Show', course_path(@domain.name, course) %></td>
 <% end %>
-<% if allowed?(:courses, :update) %>
+<% if allowed?(:courses, :update, @domain.name) %>
     <td><%= link_to 'Edit', edit_course_path(@domain.name,course) %></td>
 <% end %>
-<% if allowed?(:courses, :destroy) %>
+<% if allowed?(:courses, :destroy, @domain.name) %>
     <td><%= link_to 'Destroy', course_path(@domain.name, course), :confirm => 'Are you sure?', :method => :delete %></td>
 <% end %>
   </tr>
@@ -28,6 +28,6 @@
 
 <br />
 
-<% if allowed?(:courses, :create) %>
+<% if allowed?(:courses, :create, @domain.name) %>
 <%= link_to 'New Course', new_course_path(@domain.name) %>
 <% end %>

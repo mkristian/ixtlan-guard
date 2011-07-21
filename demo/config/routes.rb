@@ -1,12 +1,17 @@
 Demo::Application.routes.draw do
   resources :domains
 
+  resources :permissions
+
+  resources :maintenance
+
   resources :courses, :path => ":domain/courses"
 
   resources :users do
     member do
       get :login
       get :logout
+      get :permissions
     end
     collection do
       get :maintanance

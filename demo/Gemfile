@@ -36,7 +36,7 @@ group :development, :test do
   gem 'rack-test'
 end
 
-gem 'ixtlan-guard', '0.1.1'
+gem 'ixtlan-guard', '0.2.0'
 
 if defined? MAVEN
   properties({ "jruby.plugins.version" => '0.23.0-SNAPSHOT' })

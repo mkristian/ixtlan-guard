@@ -1,29 +1,4 @@
 class CoursesController < ApplicationController
-
-  protected
-
-  before_filter :locale_authorization
-
-  skip_before_filter :authorization
-
-  def locale_authorization
-    @domain = Domain.find_by_name(params[:domain])
-    authorization do |group| 
-      if self.respond_to?(:current_user) && @domain
-        user = self.send :current_user
-        map = {
-          "admin:courses" => ["asia", "europe"],
-          "registrar:courses" => ["asia"],
-          "teacher:teacher" => ["europe"]
-        }
-        allowed_domains = map[ user.name + ":" + group.to_s] || []
-        allowed_domains.member?(@domain.name) || group == :root
-      end
-    end
-  end
-
-  public
-
   # GET /courses
   # GET /courses.xml
   def index

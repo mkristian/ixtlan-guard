@@ -10,7 +10,8 @@ class UsersGuard
       :destroy => [:users],
       :logout => [:*],
       :maintanance => [],
-      :resume => []
+      :resume => [],
+      :permissions => [:*]
     }
   end
 end
