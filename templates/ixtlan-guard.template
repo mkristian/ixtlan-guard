@@ -2,5 +2,5 @@
 
 gem 'ruby-maven', '0.8.3.0.3.0.28.3'
 gem 'ixtlan-guard', :path => '../..'
-
+gem 'ixtlan-core' # since rmvn can not resolve it from 'ixtlan-guard'
 # vim: syntax=Ruby
