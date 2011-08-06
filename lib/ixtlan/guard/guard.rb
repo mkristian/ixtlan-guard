@@ -166,13 +166,15 @@ module Ixtlan
                 end
                 action_node[flavor.to_s.sub(/s$/, '') + "s"] = flavor_list if flavor_list.size > 0
               end
-              actions << action_node
+              actions << { :action => action_node }
               actions << @aliases[resource][action] if @aliases[resource][action]
             end
           end
         end
 
-        result = map.values
+        result = map.values.collect do |perm|
+          { :permission => perm }
+        end
         result.class_eval "alias :to_x :to_xml" unless map.respond_to? :to_x
         def result.to_xml(options = {}, &block)
           options[:root] = :permissions unless options[:root]
