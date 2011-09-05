@@ -8,19 +8,7 @@ module Guard
 #    check_class_collision :suffix => "Guard"
     
     def create_guard_files
-      template 'guard.rb', File.join('app', 'guards', class_path, "#{plural_file_name}_guard.rb")
-    end
-    
-    def guard_class_name
-      controller_class_name
-    end
-
-    def aliases
-      { :create=>:new, :update=>:edit }
-    end
-
-    def actions
-      ['index', 'show', 'new', 'edit', 'destroy']
+      template 'guard.yml', File.join('app', 'guards', class_path, "#{plural_file_name}_guard.yml")
     end
   end
 end

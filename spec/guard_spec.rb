@@ -1,130 +1,89 @@
 require 'spec_helper'
-require 'ixtlan/guard'
+require 'ixtlan/guard/guard_ng'
+require 'logger'
 
-describe Ixtlan::Guard do
+describe Ixtlan::Guard::GuardNG do
 
-  before :all do
-    @guard = Ixtlan::Guard::Guard.new(:guard_dir => File.join(File.dirname(__FILE__), "guards") )
-
-    @guard.setup
-    @current_user = Object.new
-    def @current_user.groups(g = nil)
-      if g
-        @groups = g.collect do |gg|
-          group = Object.new
-          def group.name(name =nil)
-            @name = name if name
-            @name
-          end
-          group.name(gg)
-          group
-        end
-      end
-      @groups || []
+  subject do
+    logger = Logger.new(STDOUT)
+    def logger.debug(&block)
+      info("\n\t[debug] " + block.call)
     end
-
-    @controller = Object.new
-    def @controller.current_user(u = nil)
-      @u = u if u
-      @u
-    end
-    @controller.current_user( @current_user )
+    Ixtlan::Guard::GuardNG.new(:guards_dir => File.join(File.dirname(__FILE__), "guards"), :logger => logger )
   end
 
   it 'should fail with missing guard dir' do
-    lambda {Ixtlan::Guard::Guard.new(:guard_dir => "does_not_exists").setup }.should raise_error(Ixtlan::Guard::GuardException)
+    lambda {Ixtlan::Guard::GuardNG.new(:guards_dir => "does_not_exists") }.should raise_error(Ixtlan::Guard::GuardException)
   end
 
   it 'should initialize' do
-    @guard.should_not be_nil
+    subject.should_not be_nil
   end
 
-  it 'should fail check without current user' do
-    controller = Object.new
-    def controller.current_user
-    end
-    @guard.check(controller, :none, :something).should be_false
+  it 'should fail without groups' do
+    subject.allowed?(:users, :something, []).should be_false
   end
 
-  it 'should pass check with user being root' do
-    @current_user.groups([:root])
-    @guard.check(@controller, :users, :show).should be_true
+  it 'should pass with user being root' do
+    subject.allowed?(:users, :show, [:root]).should be_true
   end
 
-  it 'should not pass check with user - no groups' do
-    @current_user.groups([])
-    @guard.check(@controller, :users, :show).should be_false
+  it 'should pass "allow all groups" with user with any groups' do
+    subject.allowed?(:users, :index, [:any]).should be_true
   end
 
-  it 'should pass unguarded check with user - no groups' do
-    @current_user.groups([])
-    @guard.check(@controller, :users, :index).should be_true
+  it 'should pass' do
+    subject.allowed?(:users, :update, [:users]).should be_true
   end
 
-  it 'should pass check with user on aliased action' do
-    @current_user.groups([:users])
-    @guard.check(@controller, :users, :edit).should be_true
-  end
-
-  it 'should pass check with user' do
-    @current_user.groups([:users])
-    @guard.check(@controller, :users, :update).should be_true
-  end
-
-  it 'should not pass check with user when in blocked group' do
-    @current_user.groups([:users])
-    @guard.block_groups([:users])
+  it 'should not pass with user when in blocked group' do
+    subject.block_groups([:users])
     begin
-      @guard.check(@controller, :users, :update).should be_false
+      subject.allowed?(:users, :update, [:users]).should be_false
     ensure
-      @guard.block_groups([])
+      subject.block_groups([])
     end
   end
 
-  it 'should pass check with user when not in blocked group' do
-    @current_user.groups([:users])
-    @guard.block_groups([:accounts])
+  it 'should pass with user when not in blocked group' do
+    subject.block_groups([:accounts])
     begin
-      @guard.check(@controller, :users, :update).should be_true
+      subject.allowed?(:users, :update, [:users]).should be_true
     ensure
-      @guard.block_groups([])
+      subject.block_groups([])
     end
   end
 
-  it 'should pass check with root-user when not in blocked group' do
-    @current_user.groups([:root])
-    @guard.block_groups([:root])
+  it 'should not block root group' do
+    subject.block_groups([:root])
     begin
-      @guard.check(@controller, :users, :update).should be_true
+      subject.allowed?(:users, :update, [:root]).should be_true
     ensure
-      @guard.block_groups([])
+      subject.block_groups([])
     end
   end
 
-  it 'should not pass check with user' do
-    @current_user.groups([:accounts])
-    @guard.check(@controller, :users, :update).should be_false
+  it 'should not pass' do
+    subject.allowed?(:users, :update, [:accounts]).should be_false
   end
 
-  it 'should pass check with user with passing extra check' do
-    @current_user.groups([:users])
-    @guard.check(@controller, :users, :update) do |g|
-      true
-    end.should be_true
+  it 'should should use defaults on unknown action' do
+    subject.allowed?(:users, :unknow, [:users]).should be_true
   end
 
-  it 'should not pass check with user with failing extra check' do
-    @current_user.groups([:users])
-    @guard.check(@controller, :users, :update) do |g|
-      false
-    end.should be_false
+  it 'should pass with right group and allowed flavor' do
+    subject.allowed?(:users, :update, [:users], :example){ |g| [:example]}.should be_true
   end
 
-  it 'should raise exception on unknown action' do
-    lambda {@guard.check(@controller, :users, :unknown_action) }.should raise_error(Ixtlan::Guard::GuardException)
+  it 'should not pass with wrong group but allowed flavor' do
+    subject.allowed?(:users, :update, [:accounts], :example){ |g| [:example]}.should be_false
   end
 
-  it 'should raise exception on unknown resource' do
-    lambda {@guard.check(@controller, :unknown_resource, :update) }.should raise_error(Ixtlan::Guard::GuardException)
+  it 'should not pass with wrong group but disallowed flavor' do
+    subject.allowed?(:users, :update, [:accounts], :example){ |g| []}.should be_false
+  end
+
+  it 'should not pass with right group and disallowed flavor' do
+    subject.allowed?(:users, :update, [:users], :example){ |g| []}.should be_false
   end
 end

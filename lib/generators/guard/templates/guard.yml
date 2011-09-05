@@ -1,0 +1,12 @@
+<%= plural_file_name %>:
+  defaults: [] 
+<% case actions
+   when Array
+     for action in actions -%>
+#  <%= action %>: []
+<%   end 
+   when Hash
+     actions.each do |action, groups| -%>
+  <%= action %>: <%= groups.inspect %>
+<%   end
+   end -%>

@@ -1,0 +1,6 @@
+accounts: 
+  defaults: 
+  -  group
+  destroy:
+  - admin 
+  show: [manager, guest]

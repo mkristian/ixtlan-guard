@@ -1,0 +1,7 @@
+person: 
+  defaults: 
+  -  group1
+  -  group2  
+  destroy:
+  -  admin
+  index: [admin, manager, guest]
