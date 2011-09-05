@@ -13,13 +13,21 @@ module Ixtlan
         protected
 
         def groups_for_current_user
-          if current_user
+          if respond_to?(:current_user) && current_user
             current_user.groups.collect do |group|
               group.name
             end
           else
             []
           end
+        end
+      end
+
+      module RootGroup
+        protected
+
+        def groups_for_current_user
+          ['root']
         end
       end
 
@@ -38,9 +46,9 @@ module Ixtlan
                                 flavor, 
                                 &block)
             if flavor
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{resource}##{action}##{flavor}'")
+              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{flavor}'")
             else
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{resource}##{action}'")
+              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}'")
             end
           end
           true
