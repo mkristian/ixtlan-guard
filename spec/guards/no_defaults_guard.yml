@@ -1,0 +1,5 @@
+no_defaults:
+  edit: [no_admin, no_master]
+  index: [*]
+  show: [no_admin]
+  destroy: 

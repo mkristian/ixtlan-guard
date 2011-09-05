@@ -1,0 +1,6 @@
+defaults:
+  defaults: [_master]
+  edit: [_admin, _master]
+  index: [*]
+  show: [_admin]
+  destroy: 

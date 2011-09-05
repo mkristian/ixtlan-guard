@@ -31,8 +31,7 @@ module Ixtlan
           end
       end
 
-      def allowed(resource, action, current_groups)
-        current_groups = current_groups.collect { |g| g.to_s }
+      def allowed_groups(resource, action, current_groups)
         allowed = @config.allowed_groups(resource, action) - blocked_groups + @superuser
         if allowed.member?('*')
           current_groups
@@ -42,7 +41,8 @@ module Ixtlan
       end
 
       def allowed?(resource, action, current_groups, flavor = nil, &block)
-        allowed_groups = allowed(resource, action, current_groups)
+        current_groups = current_groups.collect { |g| g.to_s }
+        allowed_groups = self.allowed_groups(resource, action, current_groups)
         logger.debug { "guard #{resource}##{action}: #{allowed_groups.size > 0}" }
         if allowed_groups.size > 0
           if block
@@ -69,49 +69,60 @@ module Ixtlan
         end
       end
 
-      def map(current_groups, flavors = {})
+      def permissions(current_groups, flavors = {})
         perms = []
-        result = {:permissions => perms}
         m = @config.map_of_all
         m.each do |resource, actions|
           nodes = []
           perm = Node.new(:permission)
           perm[:resource] = resource
           perm[:actions] = nodes
+          defaults = intersect(current_groups, (actions.delete('defaults') || []) + @superuser)
+          deny = perm[:deny] = defaults.size != 0
           actions.each do |action, groups|
             node = Node.new(:action)
-            allowed_groups = intersect(current_groups, groups)
-            if allowed_groups.size > 0
-              node[:name] = action
-              f = {}
-              flavors.each do |fl, block|
-                f[fl] = block.call(allowed_groups)
+            allowed_groups = 
+              if groups && groups.member?('*')
+                current_groups
+              else
+                intersect(current_groups, (groups || []) + @superuser)
               end
-              node[:flavors] = f if f.size > 0
+            if (deny && allowed_groups.size == 0) || (!deny && allowed_groups.size > 0)
+              node[:name] = action
+#                f = {}
+#                flavors.each do |fl, block|
+#                  f[fl] = block.call(allowed_groups)
+#                end
+#                node[:flavors] = f if f.size > 0
               nodes << node
             end
           end
-          perms << perm if nodes.size > 0
+          perms << perm
         end
-        result
+        perms
       end
 
-      def permissions(current_groups, flavors = {})
+      def permission_map(current_groups, flavors = {})
+        # TODO fix it - think first !!
         perms = {}
         m = @config.map_of_all
         m.each do |resource, actions|
           nodes = {}
           actions.each do |action, groups|
-            allowed_groups = intersect(current_groups, groups)
-            if allowed_groups.size > 0
-              f = {}
-              flavors.each do |fl, block|
-                flav = block.call(allowed_groups)
-                f[fl] = flav if flav.size > 0
-              end
-              nodes[action] = f
+            if action == 'defaults'
+              nodes[action] = {}
             else
-              nodes[action] = nil # indicates not default action
+              allowed_groups = intersect(current_groups, (groups || []) + @superuser)
+              if allowed_groups.size > 0
+                f = {}
+                flavors.each do |fl, block|
+                  flav = block.call(allowed_groups)
+                  f[fl] = flav if flav.size > 0
+                end
+                nodes[action] = f
+              else
+                nodes[action] = nil # indicates not default action
+              end
             end
           end
           perms[resource] = nodes if nodes.size > 0
