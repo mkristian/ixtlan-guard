@@ -8,13 +8,13 @@ module Ixtlan
     class Railtie < Rails::Railtie
 
       config.before_configuration do |app|
-        app.config.guard_dir = File.join(Rails.root, "app", "guards")
+        app.config.guards_dir = File.join(Rails.root, "app", "guards")
       end
       
       config.after_initialize do |app|
         logger = app.config.logger || Rails.logger || Logger.new(STDERR)
         options = {
-          :guard_dir => app.config.guard_dir,
+          :guards_dir => app.config.guards_dir,
           :cache => app.config.cache_classes
         }
         options[:logger] = logger unless defined?(Slf4r)
