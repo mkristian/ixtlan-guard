@@ -1,0 +1,3 @@
+allow_all_defaults:
+  defaults: [*, and_something_else_which_does_matter]
+  index: [_admin]

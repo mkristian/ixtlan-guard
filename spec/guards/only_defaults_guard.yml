@@ -1,0 +1,2 @@
+only_defaults:
+  defaults: [*, and_something_else_which_does_matter]

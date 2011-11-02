@@ -3,9 +3,7 @@ module Ixtlan
     module Guard #:nodoc:
       def self.included(base)
         base.send(:include, InstanceMethods)
-        unless base.respond_to?(:groups_for_current_user)
-          base.send(:include, GroupsMethod)
-        end
+        base.send(:include, GroupsMethod)
       end
 
       module GroupsMethod
@@ -40,9 +38,10 @@ module Ixtlan
         end
 
         def check(flavor = nil, &block)
+          group_method = respond_to?(:current_user_group_names) ? :current_user_group_names : :groups_for_current_user
           unless guard.allowed?(params[:controller], 
                                 params[:action],
-                                groups_for_current_user, 
+                                send(group_method),
                                 flavor, 
                                 &block)
             if flavor

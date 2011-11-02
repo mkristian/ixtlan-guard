@@ -34,7 +34,7 @@ module Ixtlan
       def allowed_groups(resource, action, current_groups)
         allowed = @config.allowed_groups(resource, action) - blocked_groups + @superuser
         if allowed.member?('*')
-          current_groups
+          current_groups - (blocked_groups - @superuser)
         else
           intersect(allowed, current_groups)
         end
@@ -43,7 +43,7 @@ module Ixtlan
       def allowed?(resource, action, current_groups, flavor = nil, &block)
         current_groups = current_groups.collect { |g| g.to_s }
         allowed_groups = self.allowed_groups(resource, action, current_groups)
-        logger.debug { "guard #{resource}##{action}: #{allowed_groups.size > 0}" }
+       logger.debug { "guard #{resource}##{action}: #{allowed_groups.size > 0}" }
         if allowed_groups.size > 0
           if block
             g = allowed_groups.detect do |group|
@@ -77,8 +77,20 @@ module Ixtlan
           perm = Node.new(:permission)
           perm[:resource] = resource
           perm[:actions] = nodes
-          defaults = intersect(current_groups, (actions.delete('defaults') || []) + @superuser)
-          deny = perm[:deny] = defaults.size != 0
+          defaults = actions.delete('defaults') || []
+          defaults = intersect(current_groups, defaults + @superuser) unless defaults.member?('*')
+          # no actions
+          # deny = false: !defaults.member?('*')
+          # deny = true: defaults.member?('*') || current_groups.member?(@superuser[0])
+          deny = if actions.size == 0
+                   defaults.member?('*') || current_groups.member?(@superuser[0])
+                 else
+                   # actions
+                   # deny = false : defaults == []
+                   # deny = true : defaults.member?('*')
+                   defaults.size != 0 || defaults.member?('*')
+                 end
+          perm[:deny] = deny
           actions.each do |action, groups|
             node = Node.new(:action)
             allowed_groups = 

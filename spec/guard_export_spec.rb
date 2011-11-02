@@ -18,6 +18,7 @@ describe Ixtlan::Guard::GuardNG do
       subject.permissions(['unknown_group']).should == [
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}},
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>
            {
              :resource=>"no_defaults",
@@ -36,12 +37,15 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
-         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}}]
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}},
+         # allow anything but index
+         {:permission=>{:resource=>"allow_all_defaults", :actions=>[{:action=>{:name=>"index"}}], :deny=>true}}]
     end
     it 'should deny some without defaults but wildcard "*" actions' do
       subject.permissions(['no_admin']).should == [
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}},
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>
            {
              :resource=>"no_defaults",
@@ -63,20 +67,25 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
-         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}}]
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}},
+         # allow anything but index
+         {:permission=>{:resource=>"allow_all_defaults", :actions=>[{:action=>{:name=>"index"}}], :deny=>true}}]
     end
     it 'should allow "root"' do
       subject.permissions(['root']).should == [
          {:permission=>{:resource=>"users", :actions=>[], :deny=>true}},
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"no_defaults", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"defaults", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"person", :actions=>[], :deny=>true}},
-         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>true}}]
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>true}},
+         {:permission=>{:resource=>"allow_all_defaults", :actions=>[], :deny=>true}}]
     end   
     it 'should allow with default group' do
       subject.permissions(['_master']).should == [
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}},
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>
            {
              :resource=>"no_defaults",
@@ -96,12 +105,15 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
-         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}}]
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}},
+         # allow anything but index
+         {:permission=>{:resource=>"allow_all_defaults", :actions=>[{:action=>{:name=>"index"}}], :deny=>true}}]
     end 
     it 'should allow with non-default group' do
       subject.permissions(['_admin']).should == [
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}},
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>
            {
              :resource=>"no_defaults",
@@ -122,7 +134,9 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
-         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}}]
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}},
+         # allow anything but index
+         {:permission=>{:resource=>"allow_all_defaults", :actions=>[], :deny=>true}}]
     end
   end
 
