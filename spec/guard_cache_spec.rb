@@ -9,7 +9,7 @@ $source1 = File.join(File.dirname(__FILE__), "guards", "users1_guard.yml")
 $source2 = File.join(File.dirname(__FILE__), "guards", "users2_guard.yml")
 $logger = Logger.new(STDOUT)
 def $logger.debug(&block)
-  info("\n\t[debug] " + block.call)
+#  info("\n\t[debug] " + block.call)
 end
 
 describe Ixtlan::Guard::GuardNG do

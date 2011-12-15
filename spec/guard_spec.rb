@@ -7,7 +7,7 @@ describe Ixtlan::Guard::GuardNG do
   subject do
     logger = Logger.new(STDOUT)
     def logger.debug(&block)
-      info("\n\t[debug] " + block.call)
+      #info("\n\t[debug] " + block.call)
     end
     Ixtlan::Guard::GuardNG.new(:guards_dir => File.join(File.dirname(__FILE__), "guards"), :logger => logger )
   end
@@ -83,19 +83,4 @@ describe Ixtlan::Guard::GuardNG do
     subject.allowed?(:allow_all_defaults, :update, [:users]).should be_true
   end
 
-  it 'should pass with right group and allowed flavor' do
-    subject.allowed?(:users, :update, [:users], :example){ |g| [:example]}.should be_true
-  end
-
-  it 'should not pass with wrong group but allowed flavor' do
-    subject.allowed?(:users, :update, [:accounts], :example){ |g| [:example]}.should be_false
-  end
-
-  it 'should not pass with wrong group but disallowed flavor' do
-    subject.allowed?(:users, :update, [:accounts], :example){ |g| []}.should be_false
-  end
-
-  it 'should not pass with right group and disallowed flavor' do
-    subject.allowed?(:users, :update, [:users], :example){ |g| []}.should be_false
-  end
 end

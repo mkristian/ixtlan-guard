@@ -23,7 +23,7 @@ module Ixtlan
         app.config.guard = Ixtlan::Guard::GuardNG.new(options)
 
         ::ActionController::Base.send(:include, Ixtlan::ActionController::Guard)
-        ::ActionController::Base.send(:before_filter, :authorization)
+        ::ActionController::Base.send(:before_filter, :authorize)
         ::ActionView::Base.send(:include, Ixtlan::Allowed)
       end
       

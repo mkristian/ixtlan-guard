@@ -12,9 +12,7 @@ module Ixtlan
 
         def groups_for_current_user
           if respond_to?(:current_user) && current_user
-            current_user.groups.collect do |group|
-              group.name
-            end
+            current_user.groups
           else
             []
           end
@@ -37,23 +35,25 @@ module Ixtlan
           Rails.application.config.guard
         end
 
-        def check(flavor = nil, &block)
-          group_method = respond_to?(:current_user_group_names) ? :current_user_group_names : :groups_for_current_user
+        def check(association = nil, &block)
+          group_method = respond_to?(:current_user_groups) ? :current_user_groups : :groups_for_current_user
           unless guard.allowed?(params[:controller], 
                                 params[:action],
                                 send(group_method),
-                                flavor, 
+                                association, 
                                 &block)
-            if flavor
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{flavor}'")
+            if association
+              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{association}'")
             else
               raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}'")
             end
           end
           true
         end
+        alias :authorize :check
 
         def authorization
+          warn "DEPRECATED: use 'authorize' instead"
           check
         end
       end
