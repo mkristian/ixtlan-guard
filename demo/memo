@@ -1,9 +1,0 @@
-generate ixtlan:user_management_models <user_model> <group_model> [<flavor1_model>] [<flavor2_model>] ...
-
-generate ixtlan:user_management_controller <user_model> <group_model> [<flavor1_model>] [<flavor2_model>] ...
-
-generate ixtlan:user_management_scaffold <user_model> <group_model> [<flavor1_model>] [<flavor2_model>] ...
-
-generate ixtlan:permissions_controller
-
-generate ixtlan:maintenance_controller <user_model> <group_model>
