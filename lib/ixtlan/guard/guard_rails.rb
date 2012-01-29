@@ -43,7 +43,7 @@ module Ixtlan
                                 association, 
                                 &block)
             if association
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{association}'")
+              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{association.class}(#{association.id})'")
             else
               raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}'")
             end

@@ -38,6 +38,8 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
+         {:permission=>{:resource=>"regions", :actions=>[], :deny=>false}},
+         #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]
     end
     it 'should deny some without defaults but wildcard "*" actions' do
@@ -58,14 +60,16 @@ describe Ixtlan::Guard::GuardNG do
              :resource=>"no_defaults",
              :actions=>
              [{:action=>{:name=>"edit"}},
-              {:action=>{:name=>"show"}},
-              {:action=>{:name=>"index"}}],
+              {:action=>{:name=>"index"}},
+              {:action=>{:name=>"show"}}],
              :deny=>false #allow
            }
          },
          {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
+         #allow nothing
+         {:permission=>{:resource=>"regions", :actions=>[], :deny=>false}},
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]
     end
@@ -77,6 +81,7 @@ describe Ixtlan::Guard::GuardNG do
          {:permission=>{:resource=>"no_defaults", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"person", :actions=>[], :deny=>true}},
+         {:permission=>{:resource=>"regions", :actions=>[], :deny=>true}},
          {:permission=>{:resource=>"users", :actions=>[], :deny=>true}}]
     end   
     it 'should allow with default group' do
@@ -88,8 +93,8 @@ describe Ixtlan::Guard::GuardNG do
          {:permission=>
            {
              :resource=>"defaults",
-             :actions=>[{:action=>{:name=>"destroy"}},
-                        {:action=>{:name=>"show"}}],
+             :actions=>[{:action=>{:name=>"show"}},
+                        {:action=>{:name=>"destroy"}}],
              :deny=>true
            }
          },
@@ -104,8 +109,11 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
+         {:permission=>{:resource=>"regions", :actions=>[], :deny=>false}},
+         #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]
-    end 
+    end
+
     it 'should allow with non-default group' do
       subject.permissions(['_admin']).sort { |n,m| n[:resource] <=> m[:resource] }.should == [
          #allow nothing
@@ -116,8 +124,8 @@ describe Ixtlan::Guard::GuardNG do
            {
              :resource=>"defaults",
              :actions=>[{:action=>{:name=>"edit"}}, 
-                        {:action=>{:name=>"show"}}, 
-                        {:action=>{:name=>"index"}}],
+                        {:action=>{:name=>"index"}}, 
+                        {:action=>{:name=>"show"}}],
              :deny=>false # allow
            }
          },
@@ -132,40 +140,64 @@ describe Ixtlan::Guard::GuardNG do
          #allow nothing
          {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
          #allow nothing
+         {:permission=>{:resource=>"regions", :actions=>[], :deny=>false}},
+         #allow nothing
+         {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]
+    end
+
+    it 'should allow with association' do
+      group = Object.new
+      def group.name
+        "region"
+      end
+      subject.permissions([group])do |resource, action, groups|
+        if resource == 'regions'
+          case action
+          when 'show'
+            {:associations => [:europe, :asia]}
+          else
+            {}
+          end
+        else
+          {}
+        end
+      end.sort { |n,m| n[:resource] <=> m[:resource] }.should == [
+         #allow nothing
+         {:permission=>{:resource=>"accounts", :actions=>[], :deny=>false}},
+         # allow anything but index
+         {:permission=>
+           {
+              :resource=>"allow_all_defaults",
+              :actions=>[{:action=>{:name=>"index"}}],
+              :deny=>true
+           }
+         },
+         {:permission=>
+           {
+             :resource=>"defaults",
+             :actions=>[{:action=>{:name=>"index"}}],
+             :deny=>false # allow
+           }
+         },
+         {:permission=>
+           {
+             :resource=>"no_defaults",
+             :actions=>[{:action=>{:name=>"index"}}],
+             :deny=>false #allow
+           }
+         },
+         {:permission=>{:resource=>"only_defaults", :actions=>[], :deny=>true}},
+         #allow nothing
+         {:permission=>{:resource=>"person", :actions=>[], :deny=>false}},
+
+         {:permission=>
+          {:resource=>"regions",
+           :actions=>
+            [{:action=>{:name=>"show", :associations=>[:europe, :asia]}},
+             {:action=>{:name=>"create"}}],
+           :deny=>false}},
+         #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]
     end
   end
-
-  # context '#permission_map' do
-  #   it 'should export' do
-  #     pending "check expectations before implementing specs"
-  #     subject.permission_map(['admin']).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>{}, "index"=>{}}, "accounts"=>{"defaults"=>nil, "destroy"=>{}, "show"=>nil}}
-      
-  #     subject.permission_map(['manager']).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>nil, "index"=>{}}, "accounts"=>{"defaults"=>nil, "destroy"=>nil, "show"=>{}}}
-      
-  #     subject.permission_map(['manager', 'admin']).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>{}, "index"=>{}}, "accounts"=>{"defaults"=>nil, "destroy"=>{}, "show"=>{}}}
-      
-  #     subject.permission_map(['users']).should == {"users"=>{"defaults"=>{}}, "person"=>{"defaults"=>nil, "destroy"=>nil, "index"=>nil}, "accounts"=>{"defaults"=>nil, "destroy"=>nil, "show"=>nil}}
-  #   end
-    
-  #   it 'should export with flavor' do
-  #     pending "check expectations before implementing specs"
-      
-  #     flavors = { 'admin' => ['example', 'dummy'], 'manager' => ['example', 'master'] }
-      
-  #     domains = Proc.new do |groups|
-  #       groups.collect do |g|
-  #         flavors[g] || []
-  #       end.flatten.uniq
-  #     end
-      
-  #     subject.permission_map(['admin'], 'domains' => domains).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>{'domains'=>["example", "dummy"]}, "index"=>{'domains'=>["example", "dummy"]}}, "accounts"=>{"defaults"=>nil, "destroy"=>{'domains'=>["example", "dummy"]}, "show"=>nil}}
-      
-  #     subject.permission_map(['manager'], 'domains' => domains).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>nil, "index"=>{"domains"=>["example", "master"]}}, "accounts"=>{"defaults"=>nil, "destroy"=>nil, "show"=>{"domains"=>["example", "master"]}}}
-      
-  #     subject.permission_map(['manager', 'admin'], 'domains' => domains).should == {"users"=>{"defaults"=>nil}, "person"=>{"defaults"=>nil, "destroy"=>{"domains"=>["example", "dummy"]}, "index"=>{"domains"=>["example", "master", "dummy"]}}, "accounts"=>{"defaults"=>nil, "destroy"=>{"domains"=>["example", "dummy"]}, "show"=>{"domains"=>["example", "master"]}}}
-      
-  #     subject.permission_map(['users'], 'domains' => domains).should == {"users"=>{"defaults"=>{}}, "person"=>{"defaults"=>nil, "destroy"=>nil, "index"=>nil}, "accounts"=>{"defaults"=>nil, "destroy"=>nil, "show"=>nil}}
-  #   end
-  # end
 end

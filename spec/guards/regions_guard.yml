@@ -1,0 +1,8 @@
+regions:
+  show: 
+    - admin
+    # not sure if that stays like this
+    - region: [regions]
+  create:
+    - admin
+    - region

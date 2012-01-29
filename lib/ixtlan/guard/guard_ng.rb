@@ -39,7 +39,7 @@ module Ixtlan
           # keep superuser in current_groups if in there
           current_group_names - (blocked_groups - @superuser)
         else
-          intersect(allowed, current_group_names)
+          allowed & current_group_names
         end
       end
 
@@ -101,85 +101,50 @@ module Ixtlan
           perm = Node.new(:permission)
           perm[:resource] = resource
           perm[:actions] = nodes
-          defaults = actions.delete('defaults') || []
-          defaults = intersect(group_map.keys, defaults + @superuser) unless defaults.member?('*')
+          default_actions = actions.delete('defaults') || []
+          default_actions = group_map.keys & (default_actions + @superuser) unless default_actions.member?('*')
           deny = if actions.size == 0
                    # no actions
-                   # deny = false: !defaults.member?('*')
-                   # deny = true: defaults.member?('*') || current_group_names.member?(@superuser[0])
-                   defaults.member?('*') || group_map.keys.member?(@superuser[0])
+                   # deny = false: !default_actions.member?('*')
+                   # deny = true: default_actions.member?('*') || current_group_names.member?(@superuser[0])
+                   default_actions.member?('*') || group_map.keys.member?(@superuser[0]) || !group_map.keys.detect {|g| default_actions.member? g }.nil?
                  else
                    # actions
-                   # deny = false : defaults == []
-                   # deny = true : defaults.member?('*')
-                   defaults.size != 0 || defaults.member?('*')
+                   # deny = false : default_actions == []
+                   # deny = true : default_actions.member?('*')
+                   default_actions.size != 0 || default_actions.member?('*')
                  end
           perm[:deny] = deny
           actions.each do |action, groups|
+            group_names = groups.collect { |g| g.is_a?(Hash) ? g.keys : g }.flatten if groups
             node = Node.new(:action)
             allowed_groups = 
-              if groups && groups.member?('*')
+              if groups && group_names.member?('*')
                 group_map.values
               else
-                names = intersect(group_map.keys, (groups || []) + @superuser)
+                names = group_map.keys & ((group_names || []) + @superuser)
                 names.collect { |name| group_map[name] }
               end
             if (deny && allowed_groups.size == 0) || (!deny && allowed_groups.size > 0)
               node[:name] = action
-              if block 
+              if block
                 if allowed_groups.size > 0
-                  node.content.merge!(block.call(allowed_groups))
+                  node.content.merge!(block.call(resource, action, allowed_groups) || {})
                 else
-                  perm.content.merge!(block.call(group_map.values))
+                  perm.content.merge!(block.call(resource, action, group_map.values) || {})
                 end
               end
               nodes << node
             end
           end
+          # TODO is that right like this ?
+          # only default_actions, i.e. no actions !!!
           if block && actions.size == 0 && deny
-            perm.content.merge!(block.call(group_map.values))
+            perm.content.merge!(block.call(resource, nil, group_map.values) || {})
           end
           perms << perm
         end
         perms
-      end
-
-      # def permission_map(current_groups, associations = {})
-      #   # TODO fix it - think first !!
-      #   perms = {}
-      #   m = @config.map_of_all
-      #   m.each do |resource, actions|
-      #     nodes = {}
-      #     actions.each do |action, groups|
-      #       if action == 'defaults'
-      #         nodes[action] = {}
-      #       else
-      #         allowed_groups = intersect(current_groups, (groups || []) + @superuser)
-      #         if allowed_groups.size > 0
-      #           f = {}
-      #           associations.each do |a, block|
-      #             asso = block.call(allowed_groups)
-      #             f[a] = asso if asso.size > 0
-      #           end
-      #           nodes[action] = f
-      #         else
-      #           nodes[action] = nil # indicates not default action
-      #         end
-      #       end
-      #     end
-      #     perms[resource] = nodes if nodes.size > 0
-      #   end
-      #   perms
-      # end
-
-      private
-      
-      def intersect(set1, set2)
-        set1 - (set1 - set2)
-      end
-
-      def union(set1, set2)
-        set1 - set2 + set2
       end
     end
     class Node < Hash

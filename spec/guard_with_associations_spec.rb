@@ -47,48 +47,39 @@ describe Ixtlan::Guard::GuardNG do
   end
 
   it 'should add associations to node' do
-    subject.permissions([Group.new('admin', [:german, :french])]) do |groups|
+    subject.permissions([Group.new('admin', [:german, :french])]) do |resource, action, groups|
       if groups && groups.first && groups.first.name == 'admin'
         { :domains => groups.first.domains }
       else
         {}
       end
-    end.should == 
+    end.sort { |m,n| m[:resource] <=> n[:resource]}.should == 
       [{
          :permission=>{
-           :resource=>"person", 
-           :actions=> [{:action=>{
-                           :domains=>[:german, :french], 
-                           :name=>"destroy"}}, 
-                       {:action=>{
-                           :domains=>[:german, :french], 
-                           :name=>"index"}}], 
-           :deny=>false}}, 
+           :resource=>"accounts", 
+           :actions=>[{:action=>{ 
+                          :name=>"destroy",
+                          :domains=>[:german, :french]}}], 
+           :deny=>false}},
        {
          :permission=>{
-           :resource=>"accounts", 
-           :actions=>[{:action=>{
-                          :domains=>[:german, :french], 
-                          :name=>"destroy"}}], 
-           :deny=>false}}, 
+           :resource=>"allow_all_defaults",
+           :actions=>[{:action=>{:name=>"index"}}], 
+           :deny=>true, 
+           :domains=>[:german, :french]}},
        {
          :permission=>{
            :resource=>"defaults", 
            :actions=>[{:action=>{
-                          :domains=>[:german, :french], 
-                          :name=>"index"}}], 
+                          :name=>"index",
+                          :domains=>[:german, :french]}}], 
            :deny=>false}}, 
        {
          :permission=>{
            :resource=>"no_defaults", 
            :actions=>[{:action=>{
-                          :domains=>[:german, :french], 
-                          :name=>"index"}}], 
-           :deny=>false}}, 
-       {
-         :permission=>{
-           :resource=>"users", 
-           :actions=>[], 
+                          :name=>"index",
+                          :domains=>[:german, :french]}}], 
            :deny=>false}}, 
        {
          :permission=>{
@@ -98,9 +89,26 @@ describe Ixtlan::Guard::GuardNG do
            :deny=>true}}, 
        {
          :permission=>{
-           :resource=>"allow_all_defaults", 
-           :domains=>[:german, :french],
-           :actions=>[{:action=>{:name=>"index"}}], 
-           :deny=>true}}]  
+           :resource=>"person", 
+           :actions=> [{:action=>{ 
+                           :name=>"destroy",
+                           :domains=>[:german, :french]}}, 
+                       {:action=>{ 
+                           :name=>"index",
+                           :domains=>[:german, :french]}}], 
+           :deny=>false}},
+       {
+          :permission=>{
+            :resource=>"regions",
+            :actions=>[
+              {:action=>{:name=>"show", :domains=>[:german, :french]}},
+              {:action=>{:name=>"create", :domains=>[:german, :french]}}
+            ],
+            :deny=>false}},
+       {
+         :permission=>{
+           :resource=>"users", 
+           :actions=>[], 
+           :deny=>false}}]  
   end
 end
