@@ -1,5 +1,5 @@
 no_defaults:
   edit: [no_admin, no_master]
-  index: [*]
+  index: ['*']
   show: [no_admin]
   destroy: 

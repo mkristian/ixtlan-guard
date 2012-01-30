@@ -1,6 +1,6 @@
 defaults:
   defaults: [_master]
   edit: [_admin, _master]
-  index: [*]
+  index: ['*']
   show: [_admin]
   destroy: 
