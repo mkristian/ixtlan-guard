@@ -35,13 +35,17 @@ module Ixtlan
           Rails.application.config.guard
         end
 
-        def check(association = nil, &block)
+        def allowed?(action, association = nil, &block)
           group_method = respond_to?(:current_user_groups) ? :current_user_groups : :groups_for_current_user
-          unless guard.allowed?(params[:controller], 
-                                params[:action],
-                                send(group_method),
-                                association, 
-                                &block)
+          guard.allowed?(params[:controller], 
+                         action,
+                         send(group_method) || []
+                         association, 
+                         &block)
+        end
+
+        def check(association = nil, &block)
+          unless allowed?(params[:action], association, &block)
             if association
               raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{association.class}(#{association.id})'")
             else
