@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 Gem::Specification.new do |s|
   s.name = 'ixtlan-guard'
-  s.version = '0.7.2'
+  s.version = '0.8.0'
 
   s.summary = 'guard your controller actions'
   s.description = 'simple authorization framework for rails controllers'
