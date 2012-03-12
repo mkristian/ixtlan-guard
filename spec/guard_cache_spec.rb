@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'ixtlan/guard/guard_ng'
+require 'ixtlan/guard/guard'
 require 'logger'
 require 'fileutils'
 
@@ -12,11 +12,11 @@ def $logger.debug(&block)
 #  info("\n\t[debug] " + block.call)
 end
 
-describe Ixtlan::Guard::GuardNG do
+describe Ixtlan::Guard::Guard do
 
   context "without caching" do
     def not_cached
-      $not_cached ||= Ixtlan::Guard::GuardNG.new(:guards_dir => File.dirname($target), 
+      $not_cached ||= Ixtlan::Guard::Guard.new(:guards_dir => File.dirname($target), 
                                                  :logger => $logger )
     end
       
@@ -37,7 +37,7 @@ describe Ixtlan::Guard::GuardNG do
 
   context "with caching" do
     def cached
-      $cached ||= Ixtlan::Guard::GuardNG.new(:guards_dir => File.dirname($target), 
+      $cached ||= Ixtlan::Guard::Guard.new(:guards_dir => File.dirname($target), 
                                              :logger => $logger,
                                              :cache => true)
     end

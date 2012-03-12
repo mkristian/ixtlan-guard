@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'ixtlan/guard/guard_ng'
+require 'ixtlan/guard/guard'
 require 'logger'
 
 class Group
@@ -12,103 +12,119 @@ class Group
   end
 end
 
-describe Ixtlan::Guard::GuardNG do
+describe Ixtlan::Guard::Guard do
 
   subject do
     logger = Logger.new(STDOUT)
     def logger.debug(&block)
      # info("\n\t[debug] " + block.call)
     end
-    Ixtlan::Guard::GuardNG.new(:guards_dir => File.join(File.dirname(__FILE__), "guards"), :logger => logger )
+    Ixtlan::Guard::Guard.new(:guards_dir => File.join(File.dirname(__FILE__), "guards"), :logger => logger )
   end
 
-  it 'should pass without association without block' do
-    subject.allowed?(:users, :update, [Group.new(:users)]).should be_true
+  it 'should raise error without block' do
+    lambda { subject.allowed?(:users, :edit, [Group.new(:users)])}.should raise_error(RuntimeError)
   end
 
-  it 'should deny without association with block' do
-    subject.allowed?(:users, :update, [Group.new(:users)]){}.should be_false
+  it 'should deny with block returning empty array' do
+    subject.allowed?(:users, :update, [Group.new(:users)]){ |groups| [] }.should be_false
   end
 
-  it 'should deny with association without block' do
-    subject.allowed?(:users, :update, [Group.new(:users, :manager)], :manager).should be_false
+  it 'should allow root user' do
+    subject.allowed?(:users, :update, [Group.new(:root)]){ |groups| [] }.should be_true
   end
 
-  it 'should pass with matching association with block' do
-    subject.allowed?(:users, :update, [Group.new(:users, :manager)], :manager) do |group, association|
-      group.domains.detect {|d| d == association.to_s }
-    end.should be_false
+  it 'should pass with matching association' do
+    subject.allowed?(:users, :update, [Group.new(:users, :manager)]) do |groups|
+      groups.select { |g| g.domains.member? :manager }
+    end.should be_true
   end
 
-  it 'should fail with mismatching association with block' do
-    subject.allowed?(:users, :update, [Group.new(:users, :manager)], :nomanager) do |group, association|
-      group.domains.detect {|d| d == association }
+  it 'should fail with mismatching association' do
+    subject.allowed?(:users, :update, [Group.new(:users, :manager)]) do |groups|
+      groups.select { |g| g.domains.detect {|d| d == 'nomanager' } }
     end.should be_false
   end
 
   it 'should add associations to node' do
-    subject.permissions([Group.new('admin', [:german, :french])]) do |resource, action, groups|
+    perms = subject.permissions([Group.new('admin', [:german, :french])]) do |resource, groups|
       if groups && groups.first && groups.first.name == 'admin'
-        { :domains => groups.first.domains }
+        groups.first.domains
       else
         {}
       end
-    end.sort { |m,n| m[:resource] <=> n[:resource]}.should == 
-      [{
-         :permission=>{
-           :resource=>"accounts", 
-           :actions=>[{:action=>{ 
-                          :name=>"destroy",
-                          :domains=>[:german, :french]}}], 
-           :deny=>false}},
-       {
-         :permission=>{
-           :resource=>"allow_all_defaults",
-           :actions=>[{:action=>{:name=>"index"}}], 
-           :deny=>true, 
-           :domains=>[:german, :french]}},
-       {
-         :permission=>{
-           :resource=>"defaults", 
-           :actions=>[{:action=>{
-                          :name=>"index",
-                          :domains=>[:german, :french]}}], 
-           :deny=>false}}, 
-       {
-         :permission=>{
-           :resource=>"no_defaults", 
-           :actions=>[{:action=>{
-                          :name=>"index",
-                          :domains=>[:german, :french]}}], 
-           :deny=>false}}, 
-       {
-         :permission=>{
-           :resource=>"only_defaults", 
-           :domains=>[:german, :french],
-           :actions=>[],
-           :deny=>true}}, 
-       {
-         :permission=>{
-           :resource=>"person", 
-           :actions=> [{:action=>{ 
-                           :name=>"destroy",
-                           :domains=>[:german, :french]}}, 
-                       {:action=>{ 
-                           :name=>"index",
-                           :domains=>[:german, :french]}}], 
-           :deny=>false}},
-       {
-          :permission=>{
-            :resource=>"regions",
-            :actions=>[
-              {:action=>{:name=>"show", :domains=>[:german, :french]}},
-              {:action=>{:name=>"create", :domains=>[:german, :french]}}
-            ],
-            :deny=>false}},
-       {
-         :permission=>{
-           :resource=>"users", 
-           :actions=>[], 
-           :deny=>false}}]  
+    end
+
+    expected = {}
+    expected[:accounts] = {
+      :permission=>{
+        :resource=>"accounts", 
+        :actions=>[{:action=>{ 
+                       :name=>"destroy",
+                       :associations=>[:german, :french]}}], 
+        :deny=>false}
+    }
+    expected[:allow_all_defaults] = {
+      :permission=>{
+        :resource=>"allow_all_defaults",
+        :actions=>[{:action=>{:name=>"index"}}], 
+        :deny=>true, 
+        :associations=>[:german, :french]}
+    }
+    expected[:defaults] = {
+      :permission=>{
+        :resource=>"defaults", 
+        :actions=>[{:action=>{
+                       :name=>"index",
+                       :associations=>[:german, :french]}}], 
+        :deny=>false}
+    }
+    expected[:no_defaults] = {
+      :permission=>{
+        :resource=>"no_defaults", 
+        :actions=>[{:action=>{
+                       :name=>"index",
+                       :associations=>[:german, :french]}}], 
+        :deny=>false}
+    } 
+    expected[:only_defaults] = {
+      :permission=>{
+        :resource=>"only_defaults", 
+        :actions=>[],
+        :associations=>[:german, :french],
+        :deny=>true}
+    }
+    expected[:person]= {
+      :permission=>{
+        :resource=>"person", 
+        :actions=> [{:action=>{ 
+                        :name=>"destroy",
+                        :associations=>[:german, :french]}}, 
+                    {:action=>{ 
+                        :name=>"index",
+                        :associations=>[:german, :french]}}], 
+        :deny=>false}
+    }
+    expected[:regions] = {
+      :permission=>{
+        :resource=>"regions",
+        :actions=>[
+                   {:action=>{:name=>"create", :associations=>[:german, :french]}},
+                   {:action=>{:name=>"show", :associations=>[:german, :french]}}
+                  ],
+        :deny=>false}
+    }
+    expected[:users] = {
+      :permission=>{
+        :resource=>"users", 
+        :actions=>[], 
+        :deny=>false}
+    } 
+    perms.each do |perm|
+      if perm[:actions]
+        perm[:actions].sort!{ |n,m| n.content[:name] <=> m.content[:name] }
+      end
+      expected[perm[:resource].to_sym].should == perm
+    end
   end
 end

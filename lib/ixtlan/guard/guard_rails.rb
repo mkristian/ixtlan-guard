@@ -35,31 +35,21 @@ module Ixtlan
           Rails.application.config.guard
         end
 
-        def allowed?(action, association = nil, &block)
-          group_method = respond_to?(:current_user_groups) ? :current_user_groups : :groups_for_current_user
-          guard.allowed?(params[:controller], 
-                         action,
-                         send(group_method) || []
-                         association, 
-                         &block)
+        def allowed?(action, controller = params[:controller], &block)
+          group_method = respond_to?(:current_groups) ? :current_groups : :groups_for_current_user
+          guard.check(controller, 
+                      action,
+                      send(group_method) || [],
+                      &block) != nil
         end
 
-        def check(association = nil, &block)
-          unless allowed?(params[:action], association, &block)
-            if association
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}##{association.class}(#{association.id})'")
-            else
-              raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}'")
-            end
+        def check(&block)
+          unless allowed?(params[:action], &block)
+            raise ::Ixtlan::Guard::PermissionDenied.new("permission denied for '#{params[:controller]}##{params[:action]}'")
           end
           true
         end
         alias :authorize :check
-
-        def authorization
-          warn "DEPRECATED: use 'authorize' instead"
-          check
-        end
       end
     end
   end
@@ -71,8 +61,12 @@ module Ixtlan
     end
     
     module InstanceMethods #:nodoc:
-      def allowed?(resource, action)
-        controller.send(:guard).allowed?(resource, action, controller.send(:groups_for_current_user))
+      def allowed?(action, resource = nil)
+        if resource
+          controller.allowed?(action, resource)
+        else
+          controller.allowed?(action)
+        end
       end
     end
   end

@@ -1,5 +1,5 @@
 require 'rails'
-require 'ixtlan/guard/guard_ng'
+require 'ixtlan/guard/guard'
 require 'ixtlan/guard/guard_rails'
 require 'logger'
 require 'fileutils'
@@ -20,7 +20,7 @@ module Ixtlan
         }
         options[:logger] = logger unless defined?(Slf4r)
         FileUtils.mkdir_p(app.config.guards_dir)
-        app.config.guard = Ixtlan::Guard::GuardNG.new(options)
+        app.config.guard = Ixtlan::Guard::Guard.new(options)
 
         ::ActionController::Base.send(:include, Ixtlan::ActionController::Guard)
         ::ActionController::Base.send(:before_filter, :authorize)
