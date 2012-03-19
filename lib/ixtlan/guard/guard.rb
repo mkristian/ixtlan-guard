@@ -37,19 +37,17 @@ module Ixtlan
           end
       end
 
-      def allowed_groups_and_restricted(resource_name, 
-                                        action, 
-                                        current_group_names)
-        allowed, restricted = 
-          @config.allowed_groups_and_restricted(resource_name, action)
+      def allowed_groups(resource_name, 
+                         action, 
+                         current_group_names)
+        allowed = @config.allowed_groups(resource_name, action)
         allowed = allowed - blocked_groups + @superuser
-        result = if allowed.member?('*')
-                   # keep superuser in current_groups if in there
-                   current_group_names - (blocked_groups - @superuser)
-                 else
-                   allowed & current_group_names
-                 end
-        [result, restricted]
+        if allowed.member?('*')
+          # keep superuser in current_groups if in there
+          current_group_names - (blocked_groups - @superuser)
+        else
+          allowed & current_group_names
+        end
       end
 
       def group_map(current_groups)
@@ -71,22 +69,16 @@ module Ixtlan
       def check(resource_name, action, current_groups, &block)
         action = action.to_s
         group_map = group_map(current_groups)
-        allowed_group_names, restricted = 
-          allowed_groups_and_restricted(resource_name, action, group_map.keys)
-        
-        logger.debug { "guard #{resource_name}##{action}: #{allowed_group_names.size > 0}" }
+        allowed_group_names = allowed_groups(resource_name, action, group_map.keys)
 
         if allowed_group_names.size > 0
           groups = allowed_group_names.collect { |name| group_map[name] }
-          # call block to filter groups if restricted applies
-          if restricted && !allowed_group_names.member?(superuser_name)
-            raise "no block given to filter groups" unless block 
-            except = restricted['except'] || []
-            only = restricted['only'] || [action]
-            if !except.member?(action) && only.member?(action)
-              groups = block.call(groups)
-            end
+          # call block to filter groups unless we are superuser
+          if block && !allowed_group_names.member?(superuser_name)
+            groups = block.call(groups)
           end
+          
+          logger.debug { "guard #{resource_name}##{action}: #{groups.size > 0}" }
 
           # nil means 'access denied', i.e. there are no allowed groups
           groups if groups.size > 0
@@ -94,6 +86,7 @@ module Ixtlan
           unless @config.has_guard?(resource_name)
             raise ::Ixtlan::Guard::GuardException.new("no guard config for '#{resource_name}'")
           else
+            logger.debug { "guard #{resource_name}##{action}: #{allowed_group_names.size > 0}" }
             # nil means 'access denied', i.e. there are no allowed groups
             nil
           end
@@ -113,8 +106,6 @@ module Ixtlan
           perm = Node.new(:permission)
           perm[:resource] = resource
           perm[:actions] = nodes
-
-          restricted = actions.delete('restricted')
 
           # setup default_groups
           default_groups = actions.delete('defaults') || []

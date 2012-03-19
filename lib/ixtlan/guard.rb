@@ -1,1 +1,1 @@
-require 'ixtlan/guard/guard_ng'
+require 'ixtlan/guard/guard'

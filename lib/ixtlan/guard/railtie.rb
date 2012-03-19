@@ -10,6 +10,8 @@ module Ixtlan
 
       config.before_configuration do |app|
         app.config.guards_dir = File.join(Rails.root, "app", "guards")
+        # needs to be here ?!?
+        ::ActionController::Base.send(:include, Ixtlan::Guard::ActionController)
       end
       
       config.after_initialize do |app|
@@ -20,11 +22,14 @@ module Ixtlan
         }
         options[:logger] = logger unless defined?(Slf4r)
         FileUtils.mkdir_p(app.config.guards_dir)
-        app.config.guard = Ixtlan::Guard::Guard.new(options)
 
-        ::ActionController::Base.send(:include, Ixtlan::ActionController::Guard)
-        ::ActionController::Base.send(:before_filter, :authorize)
-        ::ActionView::Base.send(:include, Ixtlan::Allowed)
+        controller = ::ApplicationController rescue ::ActionController::Base
+        controller.send(:before_filter, :authorize)
+        
+        helper = ::ApplicationHelper rescue ::ActionView::Base
+        helper.send(:include, Ixtlan::Guard::Allowed)
+
+        app.config.guard = Ixtlan::Guard::Guard.new(options)
       end
       
       config.generators do

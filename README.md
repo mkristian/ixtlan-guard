@@ -79,31 +79,26 @@ to get an instance of the **Guard** on the controller itself just call `guard`. 
 
 sometimes you want to bind resource to a user/group pair, i.e. given an organizations which have report-writers and report-readers. example as rails before-filter:
 
-    skip-before-filter :authorize
-    before-filter :authorize_organization_reader, :only => [:show]
-    before-filter :authorize_organization_writer, :only => [:edit, :update]
+    skip_before-filter :authorize
+    guard_filter :authorize_organization_reader, :only => [:show]
+    guard_filter :authorize_organization_writer, :only => [:edit, :update]
 
-    def authorize_organization_writer
-      authorize(Organisation.find(params[:org_id])) do |group, org|
-        org.writer? current_user      
-      end
+    def authorize_organization_writer(groups)
+      groups.select { |g| g.writer?(current_user) }
     end
     
     def authorize_organization_reader
-      authorize(Organisation.find(params[:org_id])) do |group, org|
-        org.reader? current_user || org.writer? current_user      
-      end
+      groups.select { |g| g.writer?(current_user) || org.writer?(current_user)|}
     end
 
 of course you can organize such relations also like that
 
-    skip-before-filter :authorize
-    before-filter :authorize_organization
+    skip_before_filter :authorize
+    guard_filter :authorize_organization
 
-    def authorize_organization
-      authorize(Organisation.find(params[:org_id])) do |group, org|
-        GroupsOrganizationsUser.where(:org_id => org.id,
-	                              :user_id => current_user.id, 
-	                              :group_id => group.id).size == 1
-      end
+    def authorize_organization(groups)
+      gou = GroupsOrganizationsUser.where(:org_id => params(:org_id),
+                                          :user_id => current_user.id)
+      ids = gou.collect { |i| i.group_id }
+      groups.select { |g| ids.include?(g.id) }
     end

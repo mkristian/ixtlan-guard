@@ -9,14 +9,12 @@ module Ixtlan
         raise GuardException.new("guards directory does not exists: #{@guards_dir}") unless File.directory?(@guards_dir)
       end
 
-      def allowed_groups_and_restricted(resource, action)
+      def allowed_groups(resource, action)
         if resource && action
           groups = send(@load_method, resource.to_s)
-          restricted = groups.delete('restricted')
-          [groups[action.to_s] || groups["defaults"] || [], 
-           restricted == true ? {} : restricted]
+          groups[action.to_s] || groups["defaults"] || []
         else
-          [[], nil]
+          []
         end
       end
 

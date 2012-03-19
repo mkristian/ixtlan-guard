@@ -1,4 +1,3 @@
 users:
   defaults: [users]
-  restricted: true
   index: ['*']

@@ -22,8 +22,8 @@ describe Ixtlan::Guard::Guard do
     Ixtlan::Guard::Guard.new(:guards_dir => File.join(File.dirname(__FILE__), "guards"), :logger => logger )
   end
 
-  it 'should raise error without block' do
-    lambda { subject.allowed?(:users, :edit, [Group.new(:users)])}.should raise_error(RuntimeError)
+  it 'should pass without block' do
+    subject.allowed?(:users, :edit, [Group.new(:users)]).should be_true
   end
 
   it 'should deny with block returning empty array' do
