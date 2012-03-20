@@ -12,6 +12,7 @@ module Ixtlan
         app.config.guards_dir = File.join(Rails.root, "app", "guards")
         # needs to be here ?!?
         ::ActionController::Base.send(:include, Ixtlan::Guard::ActionController)
+        ::ActionView::Base.send(:include, Ixtlan::Guard::Allowed)
       end
       
       config.after_initialize do |app|
@@ -25,9 +26,6 @@ module Ixtlan
 
         controller = ::ApplicationController rescue ::ActionController::Base
         controller.send(:before_filter, :authorize)
-        
-        helper = ::ApplicationHelper rescue ::ActionView::Base
-        helper.send(:include, Ixtlan::Guard::Allowed)
 
         app.config.guard = Ixtlan::Guard::Guard.new(options)
       end

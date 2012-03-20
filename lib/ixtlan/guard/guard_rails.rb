@@ -199,7 +199,7 @@ module Ixtlan
       end
     
       module InstanceMethods #:nodoc:
-        def allowed?(action, resource, reference = nil)
+        def allowed?(resource, action, reference = nil)
           if resource.to_s != controller.class.controller_name || reference
             other = "#{resource}Controller".classify.constantize
             if other.respond_to?(:allowed?)

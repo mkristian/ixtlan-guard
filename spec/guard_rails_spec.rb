@@ -7,7 +7,7 @@ class Logger
   end
 end
 
-class Rails
+module Rails
   def self.application
     self
   end
