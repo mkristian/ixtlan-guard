@@ -32,7 +32,7 @@ module Ixtlan
               @block
             end
           else
-            if base.respond_to?(@method) || base.private_methods.include?(@method.to_s)
+            if base.respond_to?(@method) || base.private_methods.include?(@method.to_s) || base.private_methods.include?(@method.to_sym)
               if reference
                 Proc.new do |groups|
                   base.send(@method, groups, reference)
