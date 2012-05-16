@@ -4,6 +4,7 @@ module Ixtlan
       def self.included(base)
         base.send(:include, InstanceMethods)
         base.send(:include, GroupsMethod)
+        base.send(:before_filter, :authorize)
       end
 
       class Filter

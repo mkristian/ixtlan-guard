@@ -24,9 +24,6 @@ module Ixtlan
         options[:logger] = logger unless defined?(Slf4r)
         FileUtils.mkdir_p(app.config.guards_dir)
 
-        controller = ::ApplicationController rescue ::ActionController::Base
-        controller.send(:before_filter, :authorize)
-
         app.config.guard = Ixtlan::Guard::Guard.new(options)
       end
       
