@@ -25,6 +25,9 @@ module Rails
 end
 
 class Controller
+  def self.before_filter(*args)
+  end
+
   include Ixtlan::Guard::ActionController
 
   attr_accessor :params
