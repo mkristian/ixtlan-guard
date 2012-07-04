@@ -26,8 +26,9 @@ module Ixtlan
 
         app.config.guard = Ixtlan::Guard::Guard.new(options)
       end
-      
-      config.generators do
+
+      gmethod = config.respond_to?(:generators)? :generators : :app_generators
+      config.send(gmethod) do
         require 'rails/generators'
         require 'rails/generators/rails/controller/controller_generator'
         Rails::Generators::ControllerGenerator.hook_for :guard, :type => :boolean, :default => true do |controller|
