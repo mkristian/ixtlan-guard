@@ -1,5 +1,5 @@
 target
-*.pom
+.pom.xml
 *.files
 bin
 .bundle
