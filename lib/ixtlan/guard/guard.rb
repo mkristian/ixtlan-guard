@@ -1,5 +1,5 @@
 require 'ixtlan/guard/guard_config'
-
+require 'virtus'
 module Ixtlan
   module Guard
     class Guard
@@ -103,9 +103,9 @@ module Ixtlan
         m = @config.map_of_all
         m.each do |resource, actions|
           nodes = []
-          perm = Node.new(:permission)
-          perm[:resource] = resource
-          perm[:actions] = nodes
+          perm = Permission.new #Node.new(:permission)
+          perm.resource = resource
+          perm.actions = nodes
 
           # setup default_groups
           default_groups = actions.delete('defaults') || []
@@ -122,11 +122,11 @@ module Ixtlan
                    # deny = true : default_groups.member?('*')
                    default_groups.size != 0 || default_groups.member?('*')
                  end
-          perm[:deny] = deny
+          perm.deny = deny
 
           actions.each do |action, groups|
             group_names = groups.collect { |g| g.is_a?(Hash) ? g.keys : g }.flatten if groups
-            node = Node.new(:action)
+            node = Acton.new #Node.new(:action)
             allowed_groups = 
               if groups && group_names.member?('*')
                 group_map.values
@@ -136,49 +136,46 @@ module Ixtlan
               end
 
             if (deny && allowed_groups.size == 0) || (!deny && allowed_groups.size > 0)
-              node[:name] = action
+              node.name = action
               if block
                 if allowed_groups.size > 0
                   assos = block.call(resource, allowed_groups)
-                  node[:associations] = assos if assos && assos.size > 0
+                  node.associations = assos if assos && assos.size > 0
                 else
                   assos = block.call(resource, group_map.values)
-                  perm[:associations] = assos if assos && assos.size > 0
+                  perm.associations = assos if assos && assos.size > 0
                 end
               end
               nodes << node
             elsif deny && allowed_groups.size > 0 && block
               assos = block.call(resource, group_map.values)
-              perm[:associations] = assos if assos && assos.size > 0
+              perm.associations = assos if assos && assos.size > 0
             end
           end
           # TODO is that right like this ?
           # only default_groups, i.e. no actions !!!
           if block && actions.size == 0 && deny
             assos = block.call(resource, group_map.values)
-            perm[:associations] = assos if assos && assos.size > 0
+            perm.associations = assos if assos && assos.size > 0
           end
           perms << perm
         end
         perms
       end
     end
-    class Node < Hash
+    class Action   
+      include Virtus
 
-      attr_reader :content
+      attribute :name, String
+      attribute :associations, Array[String]
+    end
+    class Permission   
+      include Virtus
 
-      def initialize(name)
-        map = super
-        @content = {}
-        merge!({ name => @content })
-      end
-
-      def []=(k,v)
-        @content[k] = v
-      end
-      def [](k)
-        @content[k]
-      end
+      attribute :resource, String
+      attribute :actions, Array[Action]
+      attribute :deny, Boolean
+      attribute :associations, Array[String]
     end
     class GuardException < Exception; end
     class PermissionDenied < GuardException; end
