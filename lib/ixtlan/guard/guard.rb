@@ -1,5 +1,5 @@
 require 'ixtlan/guard/guard_config'
-require 'virtus'
+require 'ixtlan/guard/models'
 module Ixtlan
   module Guard
     class Guard
@@ -162,21 +162,5 @@ module Ixtlan
         perms
       end
     end
-    class Action   
-      include Virtus
-
-      attribute :name, String
-      attribute :associations, Array[String]
-    end
-    class Permission   
-      include Virtus
-
-      attribute :resource, String
-      attribute :actions, Array[Action]
-      attribute :deny, Boolean
-      attribute :associations, Array[String]
-    end
-    class GuardException < Exception; end
-    class PermissionDenied < GuardException; end
   end
 end
