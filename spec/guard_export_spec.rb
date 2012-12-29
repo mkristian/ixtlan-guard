@@ -16,11 +16,11 @@ describe Ixtlan::Guard::Guard do
       attr = perm.attributes
       attr[ :actions ] = perm.actions.collect do |a| 
         aa = a.attributes
-        aa.delete( :associations ) if aa[ :associations ].nil?
+        aa.delete( :associations ) if aa[ :associations ].nil? || aa[ :associations ].empty?
         {:action => aa}
       end
       attr[:actions].sort!{ |n,m| n[:action][:name] <=> m[:action][:name] }
-      attr.delete( :associations ) if attr[ :associations ].nil?
+      attr.delete( :associations ) if attr[ :associations ].nil? || attr[ :associations ].empty?
       map[perm[:resource]][:permission].should == attr
     end
   end
