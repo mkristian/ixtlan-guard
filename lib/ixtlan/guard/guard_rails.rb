@@ -116,7 +116,7 @@ module Ixtlan
             end
 
             def self.guard
-              Rails.application.config.guard
+              ::Rails.application.config.guard
             end
 
             def self.allowed?(action, current_groups, reference = nil)

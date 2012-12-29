@@ -105,7 +105,7 @@ module Ixtlan
           nodes = []
           perm = Permission.new #Node.new(:permission)
           perm.resource = resource
-          perm.actions = nodes
+          perm.actions = []#nodes
 
           # setup default_groups
           default_groups = actions.delete('defaults') || []
@@ -126,7 +126,7 @@ module Ixtlan
 
           actions.each do |action, groups|
             group_names = groups.collect { |g| g.is_a?(Hash) ? g.keys : g }.flatten if groups
-            node = Acton.new #Node.new(:action)
+            node = Action.new #Node.new(:action)
             allowed_groups = 
               if groups && group_names.member?('*')
                 group_map.values
@@ -134,7 +134,6 @@ module Ixtlan
                 names = group_map.keys & ((group_names || []) + @superuser)
                 names.collect { |name| group_map[name] }
               end
-
             if (deny && allowed_groups.size == 0) || (!deny && allowed_groups.size > 0)
               node.name = action
               if block
@@ -146,7 +145,7 @@ module Ixtlan
                   perm.associations = assos if assos && assos.size > 0
                 end
               end
-              nodes << node
+              perm.actions << node
             elsif deny && allowed_groups.size > 0 && block
               assos = block.call(resource, group_map.values)
               perm.associations = assos if assos && assos.size > 0

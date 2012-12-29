@@ -1,4 +1,4 @@
-require 'rails'
+require 'rails/railtie'
 require 'ixtlan/guard/guard'
 require 'ixtlan/guard/guard_rails'
 require 'logger'

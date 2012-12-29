@@ -7,16 +7,21 @@ describe Ixtlan::Guard::Guard do
   def assert(expected, perms)
     map = {}
     expected.each do |e|
-      map[e[:permission][:resource]] = e
-      if e[:permission][:actions]
-        e[:permission][:actions].sort!{ |n,m| n[:action][:name] <=> m[:action][:name] }
+      map[(e[:permission] || e)[:resource]] = e
+      if (e[:permission] || e)[:actions]
+        (e[:permission] || e)[:actions].sort!{ |n,m| n[:action][:name] <=> m[:action][:name] }
       end
     end
     perms.each do |perm|
-      if perm[:actions]
-        perm[:actions].sort!{ |n,m| n.content[:name] <=> m.content[:name] }
+      attr = perm.attributes
+      attr[ :actions ] = perm.actions.collect do |a| 
+        aa = a.attributes
+        aa.delete( :associations ) if aa[ :associations ].nil?
+        {:action => aa}
       end
-      map[perm[:resource].to_s].should == perm
+      attr[:actions].sort!{ |n,m| n[:action][:name] <=> m[:action][:name] }
+      attr.delete( :associations ) if attr[ :associations ].nil?
+      map[perm[:resource]][:permission].should == attr
     end
   end
 
@@ -184,7 +189,7 @@ describe Ixtlan::Guard::Guard do
       end
       perm = subject.permissions([group])do |resource, groups|
         if resource == 'regions'
-          [:europe, :asia]
+          ["europe", "asia"]
         end
       end
       expected = [
@@ -219,8 +224,8 @@ describe Ixtlan::Guard::Guard do
          {:permission=>
           {:resource=>"regions",
            :actions=>
-            [{:action=>{:name=>"show", :associations=>[:europe, :asia]}},
-             {:action=>{:name=>"create", :associations=>[:europe, :asia]}}],
+            [{:action=>{:name=>"show", :associations=>["europe", "asia"]}},
+             {:action=>{:name=>"create", :associations=>["europe", "asia"]}}],
            :deny=>false}},
          #allow nothing
          {:permission=>{:resource=>"users", :actions=>[], :deny=>false}}]

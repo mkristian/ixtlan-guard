@@ -47,7 +47,7 @@ describe Ixtlan::Guard::Guard do
   end
 
   it 'should add associations to node' do
-    perms = subject.permissions([Group.new('admin', [:german, :french])]) do |resource, groups|
+    perms = subject.permissions([Group.new('admin', ["german", "french"])]) do |resource, groups|
       if groups && groups.first && groups.first.name == 'admin'
         groups.first.domains
       else
@@ -61,7 +61,7 @@ describe Ixtlan::Guard::Guard do
         :resource=>"accounts", 
         :actions=>[{:action=>{ 
                        :name=>"destroy",
-                       :associations=>[:german, :french]}}], 
+                       :associations=>["german", "french"]}}], 
         :deny=>false}
     }
     expected[:allow_all_defaults] = {
@@ -69,14 +69,14 @@ describe Ixtlan::Guard::Guard do
         :resource=>"allow_all_defaults",
         :actions=>[{:action=>{:name=>"index"}}], 
         :deny=>true, 
-        :associations=>[:german, :french]}
+        :associations=>["german", "french"]}
     }
     expected[:defaults] = {
       :permission=>{
         :resource=>"defaults", 
         :actions=>[{:action=>{
                        :name=>"index",
-                       :associations=>[:german, :french]}}], 
+                       :associations=>["german", "french"]}}], 
         :deny=>false}
     }
     expected[:no_defaults] = {
@@ -84,14 +84,14 @@ describe Ixtlan::Guard::Guard do
         :resource=>"no_defaults", 
         :actions=>[{:action=>{
                        :name=>"index",
-                       :associations=>[:german, :french]}}], 
+                       :associations=>["german", "french"]}}], 
         :deny=>false}
     } 
     expected[:only_defaults] = {
       :permission=>{
         :resource=>"only_defaults", 
         :actions=>[],
-        :associations=>[:german, :french],
+        :associations=>["german", "french"],
         :deny=>true}
     }
     expected[:person]= {
@@ -99,18 +99,18 @@ describe Ixtlan::Guard::Guard do
         :resource=>"person", 
         :actions=> [{:action=>{ 
                         :name=>"destroy",
-                        :associations=>[:german, :french]}}, 
+                        :associations=>["german", "french"]}}, 
                     {:action=>{ 
                         :name=>"index",
-                        :associations=>[:german, :french]}}], 
+                        :associations=>["german", "french"]}}], 
         :deny=>false}
     }
     expected[:regions] = {
       :permission=>{
         :resource=>"regions",
         :actions=>[
-                   {:action=>{:name=>"create", :associations=>[:german, :french]}},
-                   {:action=>{:name=>"show", :associations=>[:german, :french]}}
+                   {:action=>{:name=>"create", :associations=>["german", "french"]}},
+                   {:action=>{:name=>"show", :associations=>["german", "french"]}}
                   ],
         :deny=>false}
     }
@@ -119,12 +119,17 @@ describe Ixtlan::Guard::Guard do
         :resource=>"users", 
         :actions=>[], 
         :deny=>false}
-    } 
+    }
     perms.each do |perm|
-      if perm[:actions]
-        perm[:actions].sort!{ |n,m| n.content[:name] <=> m.content[:name] }
+      attr = perm.attributes
+      attr[ :actions ] = perm.actions.collect do |a| 
+        aa = a.attributes
+        aa.delete( :associations ) if aa[ :associations ].nil?
+        {:action => aa}
       end
-      expected[perm[:resource].to_sym].should == perm
+      attr[:actions].sort!{ |n,m| n[:action][:name] <=> m[:action][:name] }
+      attr.delete( :associations ) if attr[ :associations ].nil?
+      expected[perm[:resource].to_sym][:permission].should == attr
     end
   end
 end
