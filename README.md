@@ -1,5 +1,9 @@
 # ixtlan guard #
 
+* [![Build Status](https://secure.travis-ci.org/mkristian/ixtlan-guard.png)](http://travis-ci.org/mkristian/ixtlan-guard)
+* [![Dependency Status](https://gemnasium.com/mkristian/ixtlan-guard.png)](https://gemnasium.com/mkristian/ixtlan-guard)
+* [![Code Climate](https://codeclimate.com/badge.png)](https://codeclimate.com/github/mkristian/ixtlan-guard)
+
 it is an simple authorization framework for restful rails especially using rails as API server.
 
 the idea is simple: 
