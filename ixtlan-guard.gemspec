@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.test_files += Dir['features/step_definitions/*.rb']
 #  s.add_runtime_dependency 'ixtlan-core', '~>0.8.0'
   s.add_runtime_dependency 'virtus', '~>0.5'
-#  s.add_development_dependency 'rails', '3.0.9'
+  s.add_development_dependency 'railties', '~> 3.2.9'
   s.add_development_dependency 'rspec', '~> 2.7'
 #  s.add_development_dependency 'cucumber', '0.9.4'
   s.add_development_dependency 'rake', '~> 10.0.3'
